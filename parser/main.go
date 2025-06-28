@@ -44,7 +44,6 @@ func main() {
 		fmt.Println("Error Unmarshalling:", err)
 	}
 
-	//key is message type
 	for msgType := range msg {
 		switch msgType {
 		case "racedata":
@@ -69,6 +68,7 @@ func main() {
 					fmt.Printf("%s's data: %+v\n", r1.Name, r1)
 				}
 			}
+			//  case "racestatus": ....ect
 		}
 	}
 }
