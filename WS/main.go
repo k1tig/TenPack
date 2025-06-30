@@ -1,18 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
-
-var rxMsg map[string]json.RawMessage
-var racedata map[string]json.RawMessage
-var person map[string]string
-
-type rawMsg json.RawMessage
 
 func main() {
 	dialer := websocket.Dialer{}
@@ -24,6 +18,8 @@ func main() {
 	}
 	defer conn.Close()
 
+	keepAlive(conn, 20*time.Second)
+
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -33,6 +29,27 @@ func main() {
 		fmt.Println(string(message))
 	}
 
+}
+
+func keepAlive(c *websocket.Conn, timeout time.Duration) {
+	LastResponse := time.Now()
+	c.SetPongHandler(func(msg string) error {
+		LastResponse = time.Now()
+		return nil
+	})
+
+	go func() {
+		for {
+			err := c.WriteMessage(websocket.PingMessage, []byte("keepalive"))
+			if err != nil {
+				return
+			}
+			time.Sleep(timeout / 2)
+			if time.Since(LastResponse) > timeout {
+				fmt.Println("Sending Ping...")
+			}
+		}
+	}()
 }
 
 /*
