@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -18,6 +19,7 @@ func main() {
 	}
 	defer conn.Close()
 	go msgHandler(done, conn)
+	go pingGenerator(done, conn)
 	select {
 	case <-done:
 		return
@@ -38,6 +40,27 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 				return
 			}
 			fmt.Println(string(message))
+		}
+	}
+}
+
+func pingGenerator(done chan struct{}, c *websocket.Conn) {
+	for {
+		select {
+		case <-done:
+			close(done)
+			return
+		default:
+			ticker := time.NewTicker(time.Second * 30) // Send ping every 30 seconds
+			defer ticker.Stop()
+			for range ticker.C {
+				err := c.WriteControl(websocket.PingMessage, []byte(""), time.Now().Add(time.Second*10)) // 10-second write deadline
+				if err != nil {
+					log.Println("write ping error:", err)
+					return
+				}
+				log.Println("Ping sent.")
+			}
 		}
 	}
 }
