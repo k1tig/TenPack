@@ -8,7 +8,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var timeoutTimer time.Duration
+
 func main() {
+	chanMsg := make(chan struct{})
+	chanExit := make(chan bool)
+	timeoutTimer = 10 * time.Minute
+
+	defer close(chanExit)
+	defer close(chanMsg)
 	dialer := websocket.Dialer{}
 	conn, _, err := dialer.Dial("ws://192.168.68.85:60003/velocidrone", nil) //check for static ip
 	if err != nil {
@@ -17,36 +25,51 @@ func main() {
 		log.Println("Connected to VD")
 	}
 	defer conn.Close()
-
-	keepAlive(conn, 20*time.Second)
-
+	keepAlive(conn, timeoutTimer, chanMsg, chanExit)
+outterloop:
 	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			return
+		switch {
+		case <-chanExit:
+			conn.Close()
+			fmt.Print("closed")
+			break outterloop
+		default:
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			fmt.Println(string(message))
+			chanMsg <- struct{}{}
 		}
-		fmt.Println(string(message))
 	}
-
+	fmt.Println("\nExiting Program")
+	time.Sleep(3 * time.Second)
 }
-
-func keepAlive(c *websocket.Conn, timeout time.Duration) {
+func keepAlive(c *websocket.Conn, timeout time.Duration, msg chan struct{}, chExit chan bool) {
 	LastResponse := time.Now()
 	c.SetPongHandler(func(msg string) error {
 		LastResponse = time.Now()
 		return nil
 	})
-
 	go func() {
 		for {
-			err := c.WriteMessage(websocket.PingMessage, []byte("keepalive"))
-			if err != nil {
-				return
-			}
-			time.Sleep(timeout / 2)
-			if time.Since(LastResponse) > timeout {
-				fmt.Println("Sending Ping...")
+			select {
+			case <-msg:
+				LastResponse = time.Now()
+			default:
+				err := c.WriteMessage(websocket.PingMessage, []byte("keepalive"))
+				if err != nil {
+					fmt.Println("Error Keepalive:", err)
+					return
+				}
+				time.Sleep(timeout / 2)
+				fmt.Println(LastResponse)
+				if time.Since(LastResponse) > timeout {
+					fmt.Print("\nInnactive Client timeout: Closing connection....")
+					chExit <- true
+					return
+				}
 			}
 		}
 	}()
