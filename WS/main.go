@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -33,14 +34,63 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 		case <-done:
 			return
 		default:
+			var rawMsg map[string]json.RawMessage
 			_, message, err := conn.ReadMessage()
 			if err != nil {
 				fmt.Println("Conn not available:", err)
 				close(done)
 				return
 			}
-			fmt.Println(string(message))
+			messageStr := string(message)
+			messageCheck := []rune(messageStr)
+			if messageCheck[0] != rune(65533) {
+				err = json.Unmarshal(message, &rawMsg)
+				if err != nil {
+					fmt.Println("error unmarshaling raw message", err)
+					return
+				}
+				for key := range rawMsg {
+					//fmt.Println(key)
+					switch key {
+					case "spectatorChange":
+						var spectatorChange map[string]string
+						err = json.Unmarshal(message, &spectatorChange)
+						if err != nil {
+							fmt.Println("Error unmarshaling 'spectator change'", err)
+						}
+						for key, value := range spectatorChange {
+							fmt.Println(key, ":", value)
+						}
+					case "racestatus":
+						var raceStatus map[string]map[string]string
+						err = json.Unmarshal(message, &raceStatus)
+						if err != nil {
+							fmt.Println("Error unmarshaling 'race status'", err)
+						}
+						for key, value := range raceStatus {
+							for key2, value2 := range value {
+								fmt.Printf("%s: %s '%s'\n", key, key2, value2)
+							}
+						}
+					case "countdown":
+						var countdown map[string]map[string]string
+						err = json.Unmarshal(message, &countdown)
+						if err != nil {
+							fmt.Println("Error unmarshaling 'countdown'", err)
+						}
+						for key, value := range countdown {
+							for _, value2 := range value {
+								fmt.Printf("%s: %s\n", key, value2)
+							}
+						}
+					default:
+						fmt.Println("Unknown message header")
+						fmt.Printf("%s\n\n", string(message))
+					}
+				}
+			}
 		}
+
 	}
 }
 
