@@ -85,11 +85,12 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						}
 					case "FinishGate":
 					case "racedata":
+						//nope
 						type raceInfo struct {
-							position string
-							lap      string
-							gate     string
-							time     string
+							Position string `json:"position"`
+							Lap      string `json:"lap"`
+							Gate     string `json:"gate"`
+							Time     string `json:"time"`
 							finished string
 							color    string
 							uid      int
@@ -104,7 +105,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						for _, value := range racedata {
 							for key, raceinfo := range value {
 								r := &raceinfo
-								fmt.Printf("%s\nPosition: %s\nLap: %s\nGate: %s\nTime: %s\nFinished: %s\nUID: %d\n", key, r.position, r.lap, r.gate, r.time, r.finished, r.uid)
+								fmt.Printf("%s\nPosition: %s\nLap: %s\nGate: %s\nTime: %s\nFinished: %s\nUID: %d\n", key, r.Position, r.Lap, r.Gate, r.Time, r.finished, r.uid)
 							}
 						}
 					default:
