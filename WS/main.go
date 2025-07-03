@@ -83,6 +83,30 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 								fmt.Printf("%s: %s\n", key, value2)
 							}
 						}
+					case "FinishGate":
+					case "racedata":
+						type raceInfo struct {
+							position string
+							lap      string
+							gate     string
+							time     string
+							finished string
+							color    string
+							uid      int
+						}
+
+						var racedata map[string]map[string]raceInfo
+						err = json.Unmarshal(message, &racedata)
+						if err != nil {
+							fmt.Println("Error unmarshaling 'racedata'", err)
+						}
+
+						for _, value := range racedata {
+							for key, raceinfo := range value {
+								r := &raceinfo
+								fmt.Printf("%s\nPosition: %s\nLap: %s\nGate: %s\nTime: %s\nFinished: %s\nUID: %d\n", key, r.position, r.lap, r.gate, r.time, r.finished, r.uid)
+							}
+						}
 					default:
 						fmt.Println("Unknown message header")
 						fmt.Printf("%s\n\n", string(message))
@@ -90,7 +114,6 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 				}
 			}
 		}
-
 	}
 }
 
