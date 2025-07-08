@@ -26,6 +26,8 @@ $ ./main.exe
 {"racedata":{"k1tig":{"position":"1","lap":"1","gate":"14","time":"14.520","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"1","gate":"15","time":"15.138","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"1","gate":"16","time":"16.207","finished":"False","colour":"FF00FF","uid":304901}}}
+
+
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"1","time":"17.027","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"2","time":"18.277","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"3","time":"19.610","finished":"False","colour":"FF00FF","uid":304901}}}
@@ -42,6 +44,8 @@ $ ./main.exe
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"14","time":"30.146","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"15","time":"30.896","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"2","gate":"16","time":"32.270","finished":"False","colour":"FF00FF","uid":304901}}}
+
+
 {"racedata":{"k1tig":{"position":"1","lap":"3","gate":"1","time":"33.187","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"3","gate":"2","time":"34.722","finished":"False","colour":"FF00FF","uid":304901}}}
 {"racedata":{"k1tig":{"position":"1","lap":"3","gate":"3","time":"36.000","finished":"False","colour":"FF00FF","uid":304901}}}

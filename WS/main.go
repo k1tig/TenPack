@@ -9,6 +9,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+/*
+
+type race map[string]map[string][]float64
+type raceList []race
+
+
+
+
+*/
+
+type race struct {
+	active                          bool
+	lap1Gates, lap2Gates, lap3Gates []float64
+	raceTimes                       struct {
+		lap1, lap2, lap3, final, holeshot float64
+	}
+}
+
 func main() {
 	done := make(chan struct{})
 	dialer := websocket.Dialer{}
