@@ -9,25 +9,31 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-/*
-
-type race map[string]map[string][]float64
-type raceList []race
-
-
-
-
-*/
+// Add CSV export option
+type raceInfo struct {
+	Lap      int     `json:"lap"`
+	Gate     int     `json:"gate"`
+	Time     float64 `json:"time"`
+	Finished bool    `json:"finished"`
+	Uid      int     `json:"uid"`
+}
 
 type race struct {
-	active                          bool
+	id                              time.Time
+	uid                             int
+	username                        string
+	aborted                         bool
 	lap1Gates, lap2Gates, lap3Gates []float64
 	raceTimes                       struct {
 		lap1, lap2, lap3, final, holeshot float64
 	}
 }
 
+var raceRecords []race // check limit; if raceRecords[10]!=nil...
+var raceCounter = 0    //packlimit
+
 func main() {
+
 	done := make(chan struct{})
 	dialer := websocket.Dialer{}
 	conn, _, err := dialer.Dial("ws://192.168.68.85:60003/velocidrone", nil) //check for static ip
@@ -47,6 +53,8 @@ func main() {
 }
 
 func msgHandler(done chan struct{}, conn *websocket.Conn) {
+	var raceData race
+
 	for {
 		select {
 		case <-done:
@@ -88,6 +96,24 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						for key, value := range raceStatus {
 							for key2, value2 := range value {
 								fmt.Printf("%s: %s '%s'\n", key, key2, value2)
+								switch value2 {
+								case "start":
+									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
+								case "race finished": // need to handle submitting empty structs
+									r := &raceData
+									ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3 + r.raceTimes.holeshot
+									raceData.raceTimes.final = ft
+									raceRecords = append(raceRecords, raceData)
+									raceCounter++
+									// end program
+								case "race aborted":
+									raceRecords = append(raceRecords, race{
+										aborted: true,
+										id:      raceData.id})
+									raceCounter++
+									fmt.Println("Reached pack number:", raceCounter)
+									// end program
+								}
 							}
 						}
 					case "countdown":
@@ -104,26 +130,37 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 					case "FinishGate":
 					case "racedata":
 						//nope
-						type raceInfo struct {
-							Position string `json:"position"`
-							Lap      string `json:"lap"`
-							Gate     string `json:"gate"`
-							Time     string `json:"time"`
-							finished string
-							color    string
-							uid      int
-						}
-
-						var racedata map[string]map[string]raceInfo
-						err = json.Unmarshal(message, &racedata)
+						var msgData map[string]map[string]raceInfo
+						err = json.Unmarshal(message, &msgData)
 						if err != nil {
 							fmt.Println("Error unmarshaling 'racedata'", err)
 						}
 
-						for _, value := range racedata {
-							for key, raceinfo := range value {
+						for _, value := range msgData {
+							for racerName, raceinfo := range value {
 								r := &raceinfo
-								fmt.Printf("%s\nPosition: %s\nLap: %s\nGate: %s\nTime: %s\nFinished: %s\nUID: %d\n", key, r.Position, r.Lap, r.Gate, r.Time, r.finished, r.uid)
+								switch r.Lap {
+								case 1:
+									raceData.lap1Gates = append(raceData.lap1Gates, r.Time)
+									if r.Gate == 1 {
+										raceData.uid = r.Uid
+										raceData.username = racerName
+										raceData.raceTimes.holeshot = r.Time
+									}
+								case 2:
+									raceData.lap2Gates = append(raceData.lap2Gates, r.Time)
+									if r.Gate == 1 {
+										raceData.raceTimes.lap1 = r.Time
+									}
+								case 3:
+									raceData.lap3Gates = append(raceData.lap3Gates, r.Time)
+									if r.Gate == 1 {
+										raceData.raceTimes.lap2 = r.Time
+									}
+									if r.Finished {
+										raceData.raceTimes.lap3 = r.Time
+									}
+								}
 							}
 						}
 					default:
@@ -156,42 +193,3 @@ func pingGenerator(done chan struct{}, c *websocket.Conn) {
 		}
 	}
 }
-
-/*
-		if err := json.Unmarshal(message, &rxMsg); err != nil {
-			log.Fatal(err)
-		}
-		topKey := maps.Keys(rxMsg)
-		header := topKey[0]
-
-		switch {
-		case header == "racedata":
-			if err := json.Unmarshal(rxMsg[header], &racedata); err != nil {
-				log.Fatal(err)
-			}
-
-			x := maps.Keys(racedata)
-			racerName := x[0]
-
-			if err := json.Unmarshal(racedata[racerName], &person); err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("Racer's Name: %s\n", racerName)
-			for k, v := range person {
-				fmt.Printf("%s: %s\n", k, v)
-			}
-			println()
-		case header == "racestatus":
-
-		case header == "racetype":
-
-		case header == "countdown":
-
-		}
-
-		//x := maps.Keys(data["racedata"])
-		clear(message)
-	}
-}
-*/
-//clear()
