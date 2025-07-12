@@ -2,12 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
+
+var localAddress = flag.String("ipAddress", "none", "static local address")
+var urlStr string
 
 // Add CSV export option
 type raceInfo struct {
@@ -34,9 +40,29 @@ var raceCounter = 0    //packlimit
 
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	ipAddr := os.Getenv("IP_ADDR")
+
+	flag.Parse()
+	foundIpFlag := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "ipAddress" {
+			foundIpFlag = true
+		}
+	})
+
+	if foundIpFlag {
+		ipAddr = *localAddress
+	}
+	urlStr = "ws://" + ipAddr + ":60003/velocidrone"
+
 	done := make(chan struct{})
 	dialer := websocket.Dialer{}
-	conn, _, err := dialer.Dial("ws://192.168.68.85:60003/velocidrone", nil) //check for static ip
+	conn, _, err := dialer.Dial(urlStr, nil) //check for static ip
 	if err != nil {
 		log.Panic(err)
 	} else {
@@ -127,7 +153,6 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 								fmt.Printf("%s: %s\n", key, value2)
 							}
 						}
-					case "FinishGate":
 					case "racedata":
 						//nope
 						var msgData map[string]map[string]raceInfo
