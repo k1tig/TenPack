@@ -14,6 +14,7 @@ import (
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
 var urlStr string
+var ipAddr string
 
 // Add CSV export option
 type raceInfo struct {
@@ -44,8 +45,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
-	ipAddr := os.Getenv("IP_ADDR")
+	addr, ipExists := os.LookupEnv("IP_ADDR")
+	if ipExists {
+		ipAddr = addr
+	} else {
+		fmt.Println("No WS IP addr set")
+	}
 
 	flag.Parse()
 	foundIpFlag := false
@@ -67,6 +72,11 @@ func main() {
 		log.Panic(err)
 	} else {
 		log.Println("Connected to VD")
+		if ipExists {
+			if addr != ipAddr {
+				os.Setenv("IP_ADDR", ipAddr)
+			}
+		}
 	}
 	defer conn.Close()
 	go msgHandler(done, conn)
