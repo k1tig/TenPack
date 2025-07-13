@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -17,12 +18,60 @@ var urlStr string
 var ipAddr string
 
 // Add CSV export option
+
+type intConvert struct{ int }
+type floatConvert struct{ float64 }
+type boolConvert struct{ bool }
+
 type raceInfo struct {
-	Lap      int     `json:"lap"`
-	Gate     int     `json:"gate"`
-	Time     float64 `json:"time"`
-	Finished bool    `json:"finished"`
-	Uid      int     `json:"uid"`
+	Lap      intConvert   `json:"lap"`
+	Gate     intConvert   `json:"gate"`
+	Time     floatConvert `json:"time"`
+	Finished boolConvert  `json:"finished"`
+	Uid      int          `json:"uid"`
+}
+
+func (intC *intConvert) UnmarshalJSON(data []byte) error {
+	var intStr string
+	if err := json.Unmarshal(data, &intStr); err != nil {
+		return err
+	}
+	i, err := strconv.Atoi(intStr)
+	if err != nil {
+		return err
+	}
+	intC.int = i
+	return nil
+}
+
+func (floatC *floatConvert) UnmarshalJSON(data []byte) error {
+	var floatStr string
+	if err := json.Unmarshal(data, &floatStr); err != nil {
+		return err
+	}
+	f, err := strconv.ParseFloat(floatStr, 64)
+	if err != nil {
+		return err
+	}
+	floatC.float64 = f
+	return nil
+}
+
+func (boolC *boolConvert) UnmarshalJSON(data []byte) error {
+	var boolStr string
+	if err := json.Unmarshal(data, &boolStr); err != nil {
+		return err
+	}
+	switch boolStr {
+	case "True":
+		boolC.bool = true
+	case "False":
+		boolC.bool = false
+	default:
+		return fmt.Errorf("raceInfo bool cannot be converted")
+	}
+
+	return nil
 }
 
 type race struct {
@@ -41,7 +90,7 @@ var raceCounter = 0    //packlimit
 
 func main() {
 
-	err := godotenv.Load()
+	err := godotenv.Load("config.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -105,7 +154,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 			}
 			messageStr := string(message)
 			messageCheck := []rune(messageStr)
-			if messageCheck[0] != rune(65533) {
+			if messageCheck[0] != rune(65533) { // really need to figure out this message....
 				err = json.Unmarshal(message, &rawMsg)
 				if err != nil {
 					fmt.Println("error unmarshaling raw message", err)
@@ -115,14 +164,16 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 					//fmt.Println(key)
 					switch key {
 					case "spectatorChange":
-						var spectatorChange map[string]string
-						err = json.Unmarshal(message, &spectatorChange)
-						if err != nil {
-							fmt.Println("Error unmarshaling 'spectator change'", err)
-						}
-						for key, value := range spectatorChange {
-							fmt.Println(key, ":", value)
-						}
+						/*
+							var spectatorChange map[string]string
+							err = json.Unmarshal(message, &spectatorChange)
+							if err != nil {
+								fmt.Println("Error unmarshaling 'spectator change'", err)
+							}
+							for key, value := range spectatorChange {
+								fmt.Println(key, ":", value)
+							}
+						*/
 					case "racestatus":
 						var raceStatus map[string]map[string]string
 						err = json.Unmarshal(message, &raceStatus)
@@ -134,6 +185,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 								fmt.Printf("%s: %s '%s'\n", key, key2, value2)
 								switch value2 {
 								case "start":
+									fmt.Println("New Race Start")
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
 									r := &raceData
@@ -141,28 +193,40 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									raceData.raceTimes.final = ft
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
+									fmt.Println("Race Ended")
+									fmt.Println("Reached pack number:", raceCounter)
+									fmt.Println(" ~Race Summary~ ")
+									fmt.Println("HoleShot:", r.raceTimes.holeshot)
+									fmt.Println("Lap1:", (r.raceTimes.lap1 + r.raceTimes.holeshot))
+									fmt.Println("Lap2:", (r.raceTimes.lap2 + r.raceTimes.lap1 + r.raceTimes.holeshot))
+									fmt.Println("Lap3:", (r.raceTimes.lap3 + r.raceTimes.lap2 + r.raceTimes.lap1 + r.raceTimes.holeshot))
+									fmt.Println("Final Time:", ft)
+
 									// end program
 								case "race aborted":
 									raceRecords = append(raceRecords, race{
 										aborted: true,
 										id:      raceData.id})
 									raceCounter++
+									fmt.Println("Race Aborted")
 									fmt.Println("Reached pack number:", raceCounter)
 									// end program
 								}
 							}
 						}
 					case "countdown":
-						var countdown map[string]map[string]string
-						err = json.Unmarshal(message, &countdown)
-						if err != nil {
-							fmt.Println("Error unmarshaling 'countdown'", err)
-						}
-						for key, value := range countdown {
-							for _, value2 := range value {
-								fmt.Printf("%s: %s\n", key, value2)
+						/*
+							var countdown map[string]map[string]string
+							err = json.Unmarshal(message, &countdown)
+							if err != nil {
+								fmt.Println("Error unmarshaling 'countdown'", err)
 							}
-						}
+							for key, value := range countdown {
+								for _, value2 := range value {
+									fmt.Printf("%s: %s\n", key, value2)
+								}
+							}
+						*/
 					case "racedata":
 						//nope
 						var msgData map[string]map[string]raceInfo
@@ -174,26 +238,38 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						for _, value := range msgData {
 							for racerName, raceinfo := range value {
 								r := &raceinfo
-								switch r.Lap {
+								switch r.Lap.int {
 								case 1:
-									raceData.lap1Gates = append(raceData.lap1Gates, r.Time)
-									if r.Gate == 1 {
+									raceData.lap1Gates = append(raceData.lap1Gates, r.Time.float64)
+									if r.Gate.int == 1 {
 										raceData.uid = r.Uid
 										raceData.username = racerName
-										raceData.raceTimes.holeshot = r.Time
+										raceData.raceTimes.holeshot = r.Time.float64
+										fmt.Println(racerName, "Holeshot:", r.Time)
 									}
+
+								/////// Had the wrong index for lap times. Fix the others later
 								case 2:
-									raceData.lap2Gates = append(raceData.lap2Gates, r.Time)
-									if r.Gate == 1 {
-										raceData.raceTimes.lap1 = r.Time
+									raceData.lap2Gates = append(raceData.lap2Gates, r.Time.float64)
+									if r.Gate.int == 1 {
+										lapLen := len(raceData.lap1Gates)
+										lap1 := raceData.lap1Gates[lapLen-1]
+										raceData.raceTimes.lap1 = lap1 - raceData.raceTimes.holeshot
+										fmt.Println(racerName, "Lap1:", raceData.raceTimes.lap1)
+										fmt.Println(racerName, "Lap1(raw):", r.Time.float64)
 									}
+								/////broke past here
 								case 3:
-									raceData.lap3Gates = append(raceData.lap3Gates, r.Time)
-									if r.Gate == 1 {
-										raceData.raceTimes.lap2 = r.Time
+									raceData.lap3Gates = append(raceData.lap3Gates, r.Time.float64)
+									if r.Gate.int == 1 {
+										lapLen := len(raceData.lap2Gates)
+										lap2 := raceData.lap2Gates[lapLen-1]
+										raceData.raceTimes.lap2 = lap2 - raceData.raceTimes.lap1 - (2 * raceData.raceTimes.holeshot)
+										fmt.Println(racerName, "Lap2:", raceData.raceTimes.lap2)
 									}
-									if r.Finished {
-										raceData.raceTimes.lap3 = r.Time
+									if r.Finished.bool {
+										raceData.raceTimes.lap3 = r.Time.float64 - raceData.raceTimes.lap2 - raceData.raceTimes.lap1 - (3 * raceData.raceTimes.holeshot)
+										fmt.Println(racerName, "Lap3:", raceData.raceTimes.lap3)
 									}
 								}
 							}
