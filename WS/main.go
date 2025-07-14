@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"time"
@@ -88,6 +89,11 @@ type race struct {
 var raceRecords []race // check limit; if raceRecords[10]!=nil...
 var raceCounter = 0    //packlimit
 
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}
+
 func main() {
 
 	err := godotenv.Load("config.env")
@@ -164,28 +170,19 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 					//fmt.Println(key)
 					switch key {
 					case "spectatorChange":
-						/*
-							var spectatorChange map[string]string
-							err = json.Unmarshal(message, &spectatorChange)
-							if err != nil {
-								fmt.Println("Error unmarshaling 'spectator change'", err)
-							}
-							for key, value := range spectatorChange {
-								fmt.Println(key, ":", value)
-							}
-						*/
+					case "FinishGate":
+					case "racetype":
 					case "racestatus":
 						var raceStatus map[string]map[string]string
 						err = json.Unmarshal(message, &raceStatus)
 						if err != nil {
 							fmt.Println("Error unmarshaling 'race status'", err)
 						}
-						for key, value := range raceStatus {
-							for key2, value2 := range value {
-								fmt.Printf("%s: %s '%s'\n", key, key2, value2)
+						for _, value := range raceStatus {
+							for _, value2 := range value {
 								switch value2 {
 								case "start":
-									fmt.Println("New Race Start")
+									fmt.Printf("\nNew Race Start")
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
 									r := &raceData
@@ -193,40 +190,27 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									raceData.raceTimes.final = ft
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
-									fmt.Println("Race Ended")
-									fmt.Println("Reached pack number:", raceCounter)
-									fmt.Println(" ~Race Summary~ ")
-									fmt.Println("HoleShot:", r.raceTimes.holeshot)
-									fmt.Println("Lap1:", (r.raceTimes.lap1 + r.raceTimes.holeshot))
-									fmt.Println("Lap2:", (r.raceTimes.lap2 + r.raceTimes.lap1 + r.raceTimes.holeshot))
-									fmt.Println("Lap3:", (r.raceTimes.lap3 + r.raceTimes.lap2 + r.raceTimes.lap1))
-									fmt.Println("Final Time:", ft)
 
+									fmt.Printf("\n\n~Accumulated Race Times~\n")
+									//fmt.Println("HoleShot:", r.raceTimes.holeshot)
+									fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+									fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+									fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
+									fmt.Println("Reached pack number:", raceCounter)
+									fmt.Printf("Race Ended!!!!\n\n")
 									// end program
 								case "race aborted":
 									raceRecords = append(raceRecords, race{
 										aborted: true,
 										id:      raceData.id})
 									raceCounter++
-									fmt.Println("Race Aborted")
 									fmt.Println("Reached pack number:", raceCounter)
+									fmt.Println("Race Aborted")
 									// end program
 								}
 							}
 						}
 					case "countdown":
-						/*
-							var countdown map[string]map[string]string
-							err = json.Unmarshal(message, &countdown)
-							if err != nil {
-								fmt.Println("Error unmarshaling 'countdown'", err)
-							}
-							for key, value := range countdown {
-								for _, value2 := range value {
-									fmt.Printf("%s: %s\n", key, value2)
-								}
-							}
-						*/
 					case "racedata":
 						//nope
 						var msgData map[string]map[string]raceInfo
@@ -234,7 +218,6 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						if err != nil {
 							fmt.Println("Error unmarshaling 'racedata'", err)
 						}
-
 						for _, value := range msgData {
 							for racerName, raceinfo := range value {
 								r := &raceinfo
@@ -245,7 +228,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 										raceData.uid = r.Uid
 										raceData.username = racerName
 										raceData.raceTimes.holeshot = r.Time.float64
-										fmt.Println(racerName, "Holeshot:", r.Time)
+										fmt.Println(racerName, "Holeshot:", roundFloat(r.Time.float64, 3))
 									}
 
 								/////// Had the wrong index for lap times. Fix the others later
@@ -255,21 +238,22 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 										lapLen := len(raceData.lap1Gates)
 										lap1 := raceData.lap1Gates[lapLen-1]
 										raceData.raceTimes.lap1 = lap1 - raceData.raceTimes.holeshot
-										fmt.Println(racerName, "Lap1:", raceData.raceTimes.lap1)
-										fmt.Println(racerName, "Lap1(raw):", r.Time.float64)
+										fmt.Println(racerName, "Lap1:", roundFloat(raceData.raceTimes.lap1, 3))
 									}
 								/////broke past here
 								case 3:
 									raceData.lap3Gates = append(raceData.lap3Gates, r.Time.float64)
 									if r.Gate.int == 1 {
 										lapLen := len(raceData.lap2Gates)
-										lap2 := raceData.lap2Gates[lapLen-1]
-										raceData.raceTimes.lap2 = lap2 - raceData.raceTimes.lap1 - raceData.raceTimes.holeshot
-										fmt.Println(racerName, "Lap2:", raceData.raceTimes.lap2)
+										lap2 := raceData.lap2Gates[lapLen-1] - raceData.lap2Gates[0]
+										raceData.raceTimes.lap2 = raceData.lap2Gates[lapLen-1] - raceData.raceTimes.lap1 - raceData.raceTimes.holeshot
+										fmt.Println(racerName, "Lap2:", roundFloat(lap2, 3))
 									}
 									if r.Finished.bool {
 										raceData.raceTimes.lap3 = r.Time.float64 - raceData.raceTimes.lap2 - raceData.raceTimes.lap1
-										fmt.Println(racerName, "Lap3:", raceData.raceTimes.lap3)
+										lapLen := len(raceData.lap3Gates)
+										lap3 := raceData.lap3Gates[lapLen-1] - raceData.lap3Gates[0]
+										fmt.Println(racerName, "Lap3:", roundFloat(lap3, 3))
 									}
 								}
 							}
