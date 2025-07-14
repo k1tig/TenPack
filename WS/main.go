@@ -1,5 +1,8 @@
 package main
 
+///// Test Flags
+///// Clean up Timer Switch and functions
+
 import (
 	"encoding/json"
 	"flag"
