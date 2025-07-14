@@ -14,12 +14,15 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/joho/godotenv"
 )
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
 var urlStr string
-var ipAddr string
+var tempIpAddr string
+
+type settings struct {
+	IpAddr string `json:"IP_ADDR"`
+}
 
 // Add CSV export option
 
@@ -98,17 +101,12 @@ func roundFloat(val float64, precision uint) float64 {
 }
 
 func main() {
-
-	err := godotenv.Load("config.env")
+	var userSettings settings
+	err := readJSONFromFile("settings.json", &userSettings)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Error reading JSON: %v", err)
 	}
-	addr, ipExists := os.LookupEnv("IP_ADDR")
-	if ipExists {
-		ipAddr = addr
-	} else {
-		fmt.Println("No WS IP addr set")
-	}
+	fmt.Println("Settings loaded successfully...")
 
 	flag.Parse()
 	foundIpFlag := false
@@ -119,21 +117,25 @@ func main() {
 	})
 
 	if foundIpFlag {
-		ipAddr = *localAddress
+		userSettings.IpAddr = *localAddress
 	}
-	urlStr = "ws://" + ipAddr + ":60003/velocidrone"
+	urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
 
 	done := make(chan struct{})
 	dialer := websocket.Dialer{}
 	conn, _, err := dialer.Dial(urlStr, nil) //check for static ip
 	if err != nil {
+		log.Println("Check IP address")
 		log.Panic(err)
 	} else {
 		log.Println("Connected to VD")
-		if ipExists {
-			if addr != ipAddr {
-				os.Setenv("IP_ADDR", ipAddr)
+		if foundIpFlag {
+
+			err := writeJSONToFile("settings.json", userSettings)
+			if err != nil {
+				log.Fatalf("Error writing JSON: %v", err)
 			}
+			fmt.Println("(Provided IP Saved)")
 		}
 	}
 	defer conn.Close()
@@ -290,4 +292,21 @@ func pingGenerator(done chan struct{}, c *websocket.Conn) {
 			}
 		}
 	}
+}
+
+// helper funcs
+func readJSONFromFile(filename string, v interface{}) error {
+	jsonData, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonData, v)
+}
+
+func writeJSONToFile(filename string, data interface{}) error {
+	jsonData, err := json.MarshalIndent(data, "", "  ") // Use MarshalIndent for pretty-printed JSON
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filename, jsonData, 0644)
 }
