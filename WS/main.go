@@ -189,7 +189,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
 									r := &raceData
-									ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3 + r.raceTimes.holeshot
+									ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3
 									raceData.raceTimes.final = ft
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
@@ -199,7 +199,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									fmt.Println("HoleShot:", r.raceTimes.holeshot)
 									fmt.Println("Lap1:", (r.raceTimes.lap1 + r.raceTimes.holeshot))
 									fmt.Println("Lap2:", (r.raceTimes.lap2 + r.raceTimes.lap1 + r.raceTimes.holeshot))
-									fmt.Println("Lap3:", (r.raceTimes.lap3 + r.raceTimes.lap2 + r.raceTimes.lap1 + r.raceTimes.holeshot))
+									fmt.Println("Lap3:", (r.raceTimes.lap3 + r.raceTimes.lap2 + r.raceTimes.lap1))
 									fmt.Println("Final Time:", ft)
 
 									// end program
@@ -264,11 +264,11 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									if r.Gate.int == 1 {
 										lapLen := len(raceData.lap2Gates)
 										lap2 := raceData.lap2Gates[lapLen-1]
-										raceData.raceTimes.lap2 = lap2 - raceData.raceTimes.lap1 - (2 * raceData.raceTimes.holeshot)
+										raceData.raceTimes.lap2 = lap2 - raceData.raceTimes.lap1 - raceData.raceTimes.holeshot
 										fmt.Println(racerName, "Lap2:", raceData.raceTimes.lap2)
 									}
 									if r.Finished.bool {
-										raceData.raceTimes.lap3 = r.Time.float64 - raceData.raceTimes.lap2 - raceData.raceTimes.lap1 - (3 * raceData.raceTimes.holeshot)
+										raceData.raceTimes.lap3 = r.Time.float64 - raceData.raceTimes.lap2 - raceData.raceTimes.lap1
 										fmt.Println(racerName, "Lap3:", raceData.raceTimes.lap3)
 									}
 								}
@@ -299,7 +299,7 @@ func pingGenerator(done chan struct{}, c *websocket.Conn) {
 					log.Println("write ping error:", err)
 					return
 				}
-				log.Println("Ping sent.")
+				//log.Println("Ping sent.")
 			}
 		}
 	}
