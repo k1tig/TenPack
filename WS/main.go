@@ -12,6 +12,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -85,16 +86,17 @@ func main() {
 		}
 	}
 	defer conn.Close()
-	go msgHandler(done, conn)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go msgHandler(done, conn, &wg)
 	go pingGenerator(done, conn)
-	select {
-	case <-done:
-		return
-	}
+	wg.Wait()
+
 }
 
-func msgHandler(done chan struct{}, conn *websocket.Conn) {
+func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 	var raceData race
+	defer wg.Done()
 	for {
 		select {
 		case <-done:
