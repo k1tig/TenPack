@@ -139,21 +139,15 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									for _, r := range raceData.pilots {
 										fmt.Println("Pilot - ", r.name)
 										fmt.Println("HoleShot:", r.raceTimes.holeshot)
-										//fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-										//fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-										//fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
-
 										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
 										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
 										fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
-
 										fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
 										//fmt.Println("Reached pack number:", raceCounter)
 									}
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
 									//fmt.Println(raceRecords)
-
 									// end program
 								case "race aborted":
 									raceData = race{
@@ -201,28 +195,22 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 										case 2:
 											p.lap2Gates = append(p.lap2Gates, r.Time.float64)
 											if r.Gate.int == 1 {
-												lapLen := len(p.lap1Gates)
-												lap1 := p.lap1Gates[lapLen-1]
-												p.raceTimes.lap1 = lap1 - p.raceTimes.holeshot
+
+												p.raceTimes.lap1 = r.Time.float64 - p.raceTimes.holeshot
 												fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
+												//fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
 											}
 										/////broke past here
 										case 3:
 											p.lap3Gates = append(p.lap3Gates, r.Time.float64)
 											if r.Gate.int == 1 {
-												lapLen := len(p.lap2Gates)
-												lap2 := p.lap2Gates[lapLen-1] - p.lap2Gates[0]
-												//p.raceTimes.lap2 = p.lap2Gates[lapLen-1] - p.raceTimes.lap1 - p.raceTimes.holeshot
-												p.raceTimes.lap2 = lap2
-												fmt.Println(msgName, "Lap2:", roundFloat(lap2, 3))
+												p.raceTimes.lap2 = r.Time.float64 - p.raceTimes.lap1 - p.raceTimes.holeshot
+												fmt.Println(msgName, "Lap2:", roundFloat(p.raceTimes.lap2, 3))
 											}
 											if r.Finished.bool {
-												lapLen := len(p.lap3Gates)
-												lap3 := p.lap3Gates[lapLen-1] - p.lap3Gates[0]
-												//p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1
-												p.raceTimes.lap3 = lap3
+												p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1 - p.raceTimes.holeshot
 												p.raceTimes.final = r.Time.float64
-												fmt.Println(msgName, "Lap3:", roundFloat(lap3, 3))
+												fmt.Println(msgName, "Lap3:", roundFloat(p.raceTimes.lap3, 3))
 											}
 										default:
 											fmt.Println("Unknown message header")
