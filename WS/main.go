@@ -152,7 +152,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									}
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
-									fmt.Println(raceRecords)
+									//fmt.Println(raceRecords)
 
 									// end program
 								case "race aborted":
