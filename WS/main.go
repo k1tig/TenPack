@@ -33,14 +33,14 @@ type raceInfo struct {
 	Finished boolConvert  `json:"finished"`
 	Uid      int          `json:"uid"`
 }
-type pilotData struct {
+type pilot struct {
+	name                            string
 	uid                             int
 	lap1Gates, lap2Gates, lap3Gates []float64
 	raceTimes                       struct {
 		lap1, lap2, lap3, final, holeshot float64
 	}
 }
-type pilot map[string]*pilotData //list of pilots is redundant
 type race struct {
 	id      time.Time
 	aborted bool
@@ -91,12 +91,10 @@ func main() {
 	case <-done:
 		return
 	}
-
 }
 
 func msgHandler(done chan struct{}, conn *websocket.Conn) {
 	var raceData race
-
 	for {
 		select {
 		case <-done:
@@ -136,26 +134,20 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 									fmt.Printf("\nNew Race Start")
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
-									p := &raceData
 									fmt.Printf("\n\n~Accumulated Race Times~\n")
-									for _, pilot := range p.pilots {
-										for pilotName, r := range pilot {
-											ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3
-											r.raceTimes.final = ft
-											fmt.Println("Pilot:,", pilotName)
-											fmt.Println("HoleShot:", r.raceTimes.holeshot)
-											fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-											fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-											fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
-											fmt.Println("Final:", roundFloat((ft), 3))
-											//fmt.Println("Reached pack number:", raceCounter)
-										}
-
+									for _, r := range raceData.pilots {
+										ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3
+										r.raceTimes.final = ft
+										fmt.Println("Pilot:,", r.name)
+										fmt.Println("HoleShot:", r.raceTimes.holeshot)
+										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+										fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
+										fmt.Println("Final:", roundFloat((ft), 3))
+										//fmt.Println("Reached pack number:", raceCounter)
 									}
-
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
-
 									fmt.Printf("Race Ended!!!!\n\n")
 									// end program
 								case "race aborted":
@@ -179,62 +171,55 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						}
 						for _, value := range msgData {
 							for msgName, raceinfo := range value { //msg name is pilots name in msg, rename later
-								for _, pilot := range raceData.pilots {
-									for name, p := range pilot {
-										if msgName == name {
-											r := &raceinfo
-											switch r.Lap.int {
-											case 1:
-												p.lap1Gates = append(p.lap1Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-													//raceData.uid = r.Uid
-													//raceData.username = racerName
-													p.raceTimes.holeshot = r.Time.float64
-													fmt.Println(msgName, "Holeshot:", roundFloat(r.Time.float64, 3))
-												}
-
-											/////// Had the wrong index for lap times. Fix the others later
-											case 2:
-												p.lap2Gates = append(p.lap2Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-													lapLen := len(p.lap1Gates)
-													lap1 := p.lap1Gates[lapLen-1]
-													p.raceTimes.lap1 = lap1 - p.raceTimes.holeshot
-													fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
-												}
-											/////broke past here
-											case 3:
-												p.lap3Gates = append(p.lap3Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-													lapLen := len(p.lap2Gates)
-													lap2 := p.lap2Gates[lapLen-1] - p.lap2Gates[0]
-													p.raceTimes.lap2 = p.lap2Gates[lapLen-1] - p.raceTimes.lap1 - p.raceTimes.holeshot
-													fmt.Println(msgName, "Lap2:", roundFloat(lap2, 3))
-												}
-												if r.Finished.bool {
-													p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1
-													lapLen := len(p.lap3Gates)
-													lap3 := p.lap3Gates[lapLen-1] - p.lap3Gates[0]
-													fmt.Println(msgName, "Lap3:", roundFloat(lap3, 3))
-												}
-											default:
-												fmt.Println("Unknown message header")
-												fmt.Printf("%s\n\n", string(message))
+								for i, racer := range raceData.pilots {
+									if msgName == racer.name {
+										r := &raceinfo
+										p := &raceData.pilots[i]
+										switch r.Lap.int {
+										case 1:
+											p.lap1Gates = append(p.lap1Gates, r.Time.float64)
+											if r.Gate.int == 1 {
+												//raceData.uid = r.Uid
+												//raceData.username = racerName
+												p.raceTimes.holeshot = r.Time.float64
+												fmt.Println(msgName, "Holeshot:", roundFloat(r.Time.float64, 3))
 											}
-										} else {
-											pRaw := pilot[msgName]
-											p := &pRaw
-											raceData.pilots = append(raceData.pilots, p)
+										/////// Had the wrong index for lap times. Fix the others later
+										case 2:
+											p.lap2Gates = append(p.lap2Gates, r.Time.float64)
+											if r.Gate.int == 1 {
+												lapLen := len(p.lap1Gates)
+												lap1 := p.lap1Gates[lapLen-1]
+												p.raceTimes.lap1 = lap1 - p.raceTimes.holeshot
+												fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
+											}
+										/////broke past here
+										case 3:
+											p.lap3Gates = append(p.lap3Gates, r.Time.float64)
+											if r.Gate.int == 1 {
+												lapLen := len(p.lap2Gates)
+												lap2 := p.lap2Gates[lapLen-1] - p.lap2Gates[0]
+												p.raceTimes.lap2 = p.lap2Gates[lapLen-1] - p.raceTimes.lap1 - p.raceTimes.holeshot
+												fmt.Println(msgName, "Lap2:", roundFloat(lap2, 3))
+											}
+											if r.Finished.bool {
+												p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1
+												lapLen := len(p.lap3Gates)
+												lap3 := p.lap3Gates[lapLen-1] - p.lap3Gates[0]
+												fmt.Println(msgName, "Lap3:", roundFloat(lap3, 3))
+											}
+										default:
+											fmt.Println("Unknown message header")
+											fmt.Printf("%s\n\n", string(message))
 										}
+									} else {
+										newPilot := pilot{name: msgName, uid: racer.uid}
+										raceData.pilots = append(raceData.pilots, newPilot)
 									}
-
 								}
-
 							}
-
 						}
 					}
-
 				}
 			}
 		}
