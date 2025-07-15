@@ -131,29 +131,35 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 							for _, value2 := range value {
 								switch value2 {
 								case "start":
-									fmt.Printf("\nNew Race Start")
+									fmt.Printf("\n**New Race Start**\n")
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
-									fmt.Printf("\n\n~Accumulated Race Times~\n")
+									fmt.Printf("**Race Ended**\n")
+									fmt.Printf("\n~Accumulated Race Times~\n")
 									for _, r := range raceData.pilots {
-										ft := r.raceTimes.lap1 + r.raceTimes.lap2 + r.raceTimes.lap3
-										r.raceTimes.final = ft
-										fmt.Println("Pilot:,", r.name)
+										fmt.Println("Pilot - ", r.name)
 										fmt.Println("HoleShot:", r.raceTimes.holeshot)
-										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
-										fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
-										fmt.Println("Final:", roundFloat((ft), 3))
+										//fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+										//fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2+r.raceTimes.lap1+r.raceTimes.holeshot), 3))
+										//fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3+r.raceTimes.lap2+r.raceTimes.lap1), 3))
+
+										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
+										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
+										fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
+
+										fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
 										//fmt.Println("Reached pack number:", raceCounter)
 									}
 									raceRecords = append(raceRecords, raceData)
 									raceCounter++
-									fmt.Printf("Race Ended!!!!\n\n")
+									fmt.Println(raceRecords)
+
 									// end program
 								case "race aborted":
-									raceRecords = append(raceRecords, race{
+									raceData = race{
 										aborted: true,
-										id:      raceData.id})
+										id:      raceData.id}
+									raceRecords = append(raceRecords, raceData)
 									raceCounter++
 									fmt.Println("Reached pack number:", raceCounter)
 									fmt.Println("Race Aborted")
@@ -171,6 +177,15 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 						}
 						for _, value := range msgData {
 							for msgName, raceinfo := range value { //msg name is pilots name in msg, rename later
+								if len(raceData.pilots) == 0 {
+									//fmt.Println("empty pilot list")
+									newPilot := pilot{name: msgName, uid: raceinfo.Uid}
+									newPilot.raceTimes.holeshot = raceinfo.Time.float64
+									raceData.pilots = append(raceData.pilots, newPilot)
+									fmt.Println("New Pilot added", newPilot.name)
+									fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
+									break
+								}
 								for i, racer := range raceData.pilots {
 									if msgName == racer.name {
 										r := &raceinfo
@@ -179,8 +194,6 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 										case 1:
 											p.lap1Gates = append(p.lap1Gates, r.Time.float64)
 											if r.Gate.int == 1 {
-												//raceData.uid = r.Uid
-												//raceData.username = racerName
 												p.raceTimes.holeshot = r.Time.float64
 												fmt.Println(msgName, "Holeshot:", roundFloat(r.Time.float64, 3))
 											}
@@ -199,13 +212,16 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 											if r.Gate.int == 1 {
 												lapLen := len(p.lap2Gates)
 												lap2 := p.lap2Gates[lapLen-1] - p.lap2Gates[0]
-												p.raceTimes.lap2 = p.lap2Gates[lapLen-1] - p.raceTimes.lap1 - p.raceTimes.holeshot
+												//p.raceTimes.lap2 = p.lap2Gates[lapLen-1] - p.raceTimes.lap1 - p.raceTimes.holeshot
+												p.raceTimes.lap2 = lap2
 												fmt.Println(msgName, "Lap2:", roundFloat(lap2, 3))
 											}
 											if r.Finished.bool {
-												p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1
 												lapLen := len(p.lap3Gates)
 												lap3 := p.lap3Gates[lapLen-1] - p.lap3Gates[0]
+												//p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1
+												p.raceTimes.lap3 = lap3
+												p.raceTimes.final = r.Time.float64
 												fmt.Println(msgName, "Lap3:", roundFloat(lap3, 3))
 											}
 										default:
@@ -213,8 +229,11 @@ func msgHandler(done chan struct{}, conn *websocket.Conn) {
 											fmt.Printf("%s\n\n", string(message))
 										}
 									} else {
-										newPilot := pilot{name: msgName, uid: racer.uid}
+										newPilot := pilot{name: msgName, uid: raceinfo.Uid}
+										newPilot.raceTimes.holeshot = raceinfo.Time.float64
+										fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
 										raceData.pilots = append(raceData.pilots, newPilot)
+										fmt.Println("New Pilot added", newPilot.name)
 									}
 								}
 							}
