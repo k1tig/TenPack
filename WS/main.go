@@ -15,8 +15,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/gorilla/websocket"
 )
+
+var results = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("171"))
+var live = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("8"))
+var start = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("46"))
+var end = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("124"))
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
 var urlStr string
@@ -133,13 +144,15 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 							for _, value2 := range value {
 								switch value2 {
 								case "start":
-									fmt.Printf("\n**New Race Start**\n")
+									started := "\n**New Race " + start.Render("Start") + "**\n"
+									fmt.Println(started)
 									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 								case "race finished": // need to handle submitting empty structs
-									fmt.Printf("**Race Ended**\n")
+									ended := "\n**Race " + end.Render("Ended") + "**\n"
+									fmt.Println(ended)
 									fmt.Printf("\n~Accumulated Race Times~\n")
 									for _, r := range raceData.pilots {
-										fmt.Println("Pilot - ", r.name)
+										fmt.Println(results.Render("Pilot - ", r.name))
 										fmt.Println("HoleShot:", r.raceTimes.holeshot)
 										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
 										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
@@ -176,54 +189,53 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 								if len(raceData.pilots) == 0 {
 									//fmt.Println("empty pilot list")
 									newPilot := pilot{name: msgName, uid: raceinfo.Uid}
-									newPilot.raceTimes.holeshot = raceinfo.Time.float64
 									raceData.pilots = append(raceData.pilots, newPilot)
-									fmt.Println("New Pilot added", newPilot.name)
-									fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
-									break
-								}
-								for i, racer := range raceData.pilots {
-									if msgName == racer.name {
+									fmt.Println(live.Render("New Pilot added:"), newPilot.name)
+								} else {
+									for i, racer := range raceData.pilots {
 										r := &raceinfo
 										p := &raceData.pilots[i]
-										switch r.Lap.int {
-										case 1:
-											p.lap1Gates = append(p.lap1Gates, r.Time.float64)
-											if r.Gate.int == 1 {
-												p.raceTimes.holeshot = r.Time.float64
-												fmt.Println(msgName, "Holeshot:", roundFloat(r.Time.float64, 3))
-											}
-										/////// Had the wrong index for lap times. Fix the others later
-										case 2:
-											p.lap2Gates = append(p.lap2Gates, r.Time.float64)
-											if r.Gate.int == 1 {
+										if msgName == racer.name {
 
-												p.raceTimes.lap1 = r.Time.float64 - p.raceTimes.holeshot
-												fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
-												//fmt.Println(msgName, "Lap1:", roundFloat(p.raceTimes.lap1, 3))
+											switch r.Lap.int {
+											case 1:
+												p.lap1Gates = append(p.lap1Gates, r.Time.float64)
+												if r.Gate.int == 1 {
+													p.raceTimes.holeshot = r.Time.float64
+													fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(r.Time.float64, 'f', 3, 64)))
+												}
+											/////// Had the wrong index for lap times. Fix the others later
+											case 2:
+												p.lap2Gates = append(p.lap2Gates, r.Time.float64)
+												if r.Gate.int == 1 {
+
+													p.raceTimes.lap1 = r.Time.float64 - p.raceTimes.holeshot
+													fmt.Println(live.Render(msgName, "Lap1:", strconv.FormatFloat(p.raceTimes.lap1, 'f', 3, 64)))
+												}
+											case 3:
+												p.lap3Gates = append(p.lap3Gates, r.Time.float64)
+												if r.Gate.int == 1 {
+													p.raceTimes.lap2 = r.Time.float64 - p.raceTimes.lap1 - p.raceTimes.holeshot
+													fmt.Println(live.Render(msgName, "Lap2:", strconv.FormatFloat(p.raceTimes.lap2, 'f', 3, 64)))
+												}
+												if r.Finished.bool {
+													p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1 - p.raceTimes.holeshot
+													p.raceTimes.final = r.Time.float64
+													fmt.Println(live.Render(msgName, "Lap3:", strconv.FormatFloat(p.raceTimes.lap3, 'f', 3, 64)))
+												}
+											default:
+												fmt.Println("Unknown message header")
+												fmt.Printf("%s\n\n", string(message))
 											}
-										/////broke past here
-										case 3:
-											p.lap3Gates = append(p.lap3Gates, r.Time.float64)
-											if r.Gate.int == 1 {
-												p.raceTimes.lap2 = r.Time.float64 - p.raceTimes.lap1 - p.raceTimes.holeshot
-												fmt.Println(msgName, "Lap2:", roundFloat(p.raceTimes.lap2, 3))
+										} else {
+											newPilot := pilot{name: msgName, uid: raceinfo.Uid}
+											if r.Lap.int == 1 && r.Gate.int == 1 {
+												newPilot.raceTimes.holeshot = raceinfo.Time.float64
+												fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
+												raceData.pilots = append(raceData.pilots, newPilot)
+												fmt.Println("New Pilot added", newPilot.name)
 											}
-											if r.Finished.bool {
-												p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1 - p.raceTimes.holeshot
-												p.raceTimes.final = r.Time.float64
-												fmt.Println(msgName, "Lap3:", roundFloat(p.raceTimes.lap3, 3))
-											}
-										default:
-											fmt.Println("Unknown message header")
-											fmt.Printf("%s\n\n", string(message))
 										}
-									} else {
-										newPilot := pilot{name: msgName, uid: raceinfo.Uid}
-										newPilot.raceTimes.holeshot = raceinfo.Time.float64
-										fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
-										raceData.pilots = append(raceData.pilots, newPilot)
-										fmt.Println("New Pilot added", newPilot.name)
 									}
 								}
 							}
