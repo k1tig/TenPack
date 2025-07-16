@@ -30,7 +30,8 @@ var end = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("124"))
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
-var urlStr string
+var testServerBool = flag.Bool("tServer", true, "activates test server")
+var testFlag bool
 
 type settings struct {
 	IpAddr string `json:"IP_ADDR"`
@@ -71,6 +72,7 @@ func main() {
 	fmt.Println("Settings loaded successfully...")
 	flag.Parse()
 	foundIpFlag := false
+	foundTServerFlag := false
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == "ipAddress" {
 			foundIpFlag = true
@@ -79,16 +81,43 @@ func main() {
 	if foundIpFlag {
 		userSettings.IpAddr = *localAddress
 	}
-	urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
+	flag.Visit(func(f *flag.Flag) { //this seems fucked up. learn about flags
+		if f.Name == "tServer" {
+			foundTServerFlag = true
+		}
+	})
+	if foundTServerFlag {
+		testFlag = *testServerBool
+	}
+
+	//urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
 	done := make(chan struct{})
+	//	urlStr = "ws://" + userSettings.IpAddr + ":8080/ws"
+	//	dialer := websocket.Dialer{}
+	//	conn, _, err := dialer.Dial(urlStr, nil) //check for static ip
+
+	var urlStr string
+	if testFlag {
+		urlStr = "ws://" + userSettings.IpAddr + ":8080/ws"
+		//u = url.URL{Scheme: "ws", Host: userSettings.IpAddr, Path: wsPath}
+	} else {
+
+		urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
+
+	}
+
+	log.Printf("connecting to %s", urlStr)
 	dialer := websocket.Dialer{}
-	conn, _, err := dialer.Dial(urlStr, nil) //check for static ip
+	conn, _, err := dialer.Dial(urlStr, nil)
+	if err != nil {
+		log.Fatal("dial:", err)
+	}
 	if err != nil {
 		log.Println("Check IP address")
 		log.Panic(err)
 	} else {
 		log.Println("Connected to VD")
-		if foundIpFlag {
+		if foundIpFlag && !foundTServerFlag {
 			err := writeJSONToFile("settings.json", userSettings)
 			if err != nil {
 				log.Fatalf("Error writing JSON: %v", err)
@@ -152,7 +181,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 									fmt.Println(ended)
 									fmt.Printf("\n~Accumulated Race Times~\n")
 									for _, r := range raceData.pilots {
-										fmt.Println(results.Render("Pilot - ", r.name))
+										fmt.Println(results.Render(r.name))
 										fmt.Println("HoleShot:", r.raceTimes.holeshot)
 										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
 										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
@@ -191,6 +220,7 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 									newPilot := pilot{name: msgName, uid: raceinfo.Uid}
 									raceData.pilots = append(raceData.pilots, newPilot)
 									fmt.Println(live.Render("New Pilot added:"), newPilot.name)
+									fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
 								} else {
 									for i, racer := range raceData.pilots {
 										r := &raceinfo
@@ -231,9 +261,9 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 											newPilot := pilot{name: msgName, uid: raceinfo.Uid}
 											if r.Lap.int == 1 && r.Gate.int == 1 {
 												newPilot.raceTimes.holeshot = raceinfo.Time.float64
-												fmt.Println(msgName, "Holeshot:", roundFloat(newPilot.raceTimes.holeshot, 3))
 												raceData.pilots = append(raceData.pilots, newPilot)
-												fmt.Println("New Pilot added", newPilot.name)
+												fmt.Println(live.Render("New Pilot added:") + newPilot.name)
+												fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
 											}
 										}
 									}
