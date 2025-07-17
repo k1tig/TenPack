@@ -128,13 +128,13 @@ func main() {
 	defer conn.Close()
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go msgHandler(done, conn, &wg)
+	go msgHub(done, conn, &wg)
 	go pingGenerator(done, conn)
 	wg.Wait()
 
 }
 
-func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
+func msgHub(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 	var raceData race
 	defer wg.Done()
 	for {
@@ -157,120 +157,127 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 					fmt.Println("error unmarshaling raw message", err)
 					return
 				}
-				for key := range rawMsg {
-					//fmt.Println(key)
-					switch key {
-					case "spectatorChange":
-					case "FinishGate":
-					case "racetype":
-					case "racestatus":
-						var raceStatus map[string]map[string]string
-						err = json.Unmarshal(message, &raceStatus)
-						if err != nil {
-							fmt.Println("Error unmarshaling 'race status'", err)
+
+			}
+			go raceData.msgHandler(message, rawMsg)
+		}
+
+	}
+}
+
+func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
+	for key := range rawMsg {
+		//fmt.Println(key)
+		switch key {
+		case "spectatorChange":
+		case "FinishGate":
+		case "racetype":
+		case "racestatus":
+			var raceStatus map[string]map[string]string
+			err := json.Unmarshal(message, &raceStatus)
+			if err != nil {
+				fmt.Println("Error unmarshaling 'race status'", err)
+			}
+			for _, value := range raceStatus {
+				for _, value2 := range value {
+					switch value2 {
+					case "start":
+						started := "\n**New Race " + start.Render("Start") + "**\n"
+						fmt.Println(started)
+						r = &race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
+					case "race finished": // need to handle submitting empty structs
+						ended := "\n**Race " + end.Render("Ended") + "**\n"
+						fmt.Println(ended)
+						fmt.Printf("\n~Accumulated Race Times~\n")
+						for _, r := range r.pilots {
+							fmt.Println(results.Render(r.name))
+							fmt.Println("HoleShot:", r.raceTimes.holeshot)
+							fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
+							fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
+							fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
+							fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
+							//fmt.Println("Reached pack number:", raceCounter)
 						}
-						for _, value := range raceStatus {
-							for _, value2 := range value {
-								switch value2 {
-								case "start":
-									started := "\n**New Race " + start.Render("Start") + "**\n"
-									fmt.Println(started)
-									raceData = race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
-								case "race finished": // need to handle submitting empty structs
-									ended := "\n**Race " + end.Render("Ended") + "**\n"
-									fmt.Println(ended)
-									fmt.Printf("\n~Accumulated Race Times~\n")
-									for _, r := range raceData.pilots {
-										fmt.Println(results.Render(r.name))
-										fmt.Println("HoleShot:", r.raceTimes.holeshot)
-										fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
-										fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
-										fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
-										fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
-										//fmt.Println("Reached pack number:", raceCounter)
+						raceFinal := *r
+						raceRecords = append(raceRecords, raceFinal)
+						raceCounter++
+						//fmt.Println(raceRecords)
+						// end program
+					case "race aborted":
+						r = &race{
+							aborted: true,
+							id:      r.id}
+						raceRecords = append(raceRecords, *r)
+						raceCounter++
+						fmt.Println("Reached pack number:", raceCounter)
+						fmt.Println("Race Aborted")
+						// end program
+					}
+				}
+			}
+		case "countdown":
+		case "racedata":
+			//nope
+			var msgData map[string]map[string]raceInfo
+			err := json.Unmarshal(message, &msgData)
+			if err != nil {
+				fmt.Println("Error unmarshaling 'racedata'", err)
+			}
+			for _, value := range msgData {
+				for msgName, raceinfo := range value { //msg name is pilots name in msg, rename later
+					if len(r.pilots) == 0 {
+						//fmt.Println("empty pilot list")
+						newPilot := pilot{
+							name: msgName,
+							uid:  raceinfo.Uid,
+						}
+						newPilot.raceTimes.holeshot = raceinfo.Time.float64
+						r.pilots = append(r.pilots, newPilot)
+						fmt.Println(live.Render("New Pilot added:"), newPilot.name)
+						fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
+					} else {
+						for i, racer := range r.pilots {
+							rMsg := &raceinfo
+							p := &r.pilots[i]
+							if msgName == racer.name {
+
+								switch rMsg.Lap.int {
+								case 1:
+									p.lap1Gates = append(p.lap1Gates, rMsg.Time.float64)
+									if rMsg.Gate.int == 1 {
+										p.raceTimes.holeshot = rMsg.Time.float64
+										fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(rMsg.Time.float64, 'f', 3, 64)))
 									}
-									raceRecords = append(raceRecords, raceData)
-									raceCounter++
-									//fmt.Println(raceRecords)
-									// end program
-								case "race aborted":
-									raceData = race{
-										aborted: true,
-										id:      raceData.id}
-									raceRecords = append(raceRecords, raceData)
-									raceCounter++
-									fmt.Println("Reached pack number:", raceCounter)
-									fmt.Println("Race Aborted")
-									// end program
+								/////// Had the wrong index for lap times. Fix the others later
+								case 2:
+									p.lap2Gates = append(p.lap2Gates, rMsg.Time.float64)
+									if rMsg.Gate.int == 1 {
+
+										p.raceTimes.lap1 = rMsg.Time.float64 - p.raceTimes.holeshot
+										fmt.Println(live.Render(msgName, "Lap1:", strconv.FormatFloat(p.raceTimes.lap1, 'f', 3, 64)))
+									}
+								case 3:
+									p.lap3Gates = append(p.lap3Gates, rMsg.Time.float64)
+									if rMsg.Gate.int == 1 {
+										p.raceTimes.lap2 = rMsg.Time.float64 - p.raceTimes.lap1 - p.raceTimes.holeshot
+										fmt.Println(live.Render(msgName, "Lap2:", strconv.FormatFloat(p.raceTimes.lap2, 'f', 3, 64)))
+									}
+									if rMsg.Finished.bool {
+										p.raceTimes.lap3 = rMsg.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1 - p.raceTimes.holeshot
+										p.raceTimes.final = rMsg.Time.float64
+										fmt.Println(live.Render(msgName, "Lap3:", strconv.FormatFloat(p.raceTimes.lap3, 'f', 3, 64)))
+									}
+								default:
+									fmt.Println("Unknown message header")
+									fmt.Printf("%s\n\n", string(message))
 								}
-							}
-						}
-					case "countdown":
-					case "racedata":
-						//nope
-						var msgData map[string]map[string]raceInfo
-						err = json.Unmarshal(message, &msgData)
-						if err != nil {
-							fmt.Println("Error unmarshaling 'racedata'", err)
-						}
-						for _, value := range msgData {
-							for msgName, raceinfo := range value { //msg name is pilots name in msg, rename later
-								if len(raceData.pilots) == 0 {
-									//fmt.Println("empty pilot list")
-									newPilot := pilot{
-										name: msgName,
-										uid:  raceinfo.Uid,
-									}
+							} else {
+								newPilot := pilot{name: msgName, uid: raceinfo.Uid}
+								if rMsg.Lap.int == 1 && rMsg.Gate.int == 1 {
 									newPilot.raceTimes.holeshot = raceinfo.Time.float64
-									raceData.pilots = append(raceData.pilots, newPilot)
-									fmt.Println(live.Render("New Pilot added:"), newPilot.name)
+									r.pilots = append(r.pilots, newPilot)
+									fmt.Println(live.Render("New Pilot added:") + newPilot.name)
 									fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
-								} else {
-									for i, racer := range raceData.pilots {
-										r := &raceinfo
-										p := &raceData.pilots[i]
-										if msgName == racer.name {
-
-											switch r.Lap.int {
-											case 1:
-												p.lap1Gates = append(p.lap1Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-													p.raceTimes.holeshot = r.Time.float64
-													fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(r.Time.float64, 'f', 3, 64)))
-												}
-											/////// Had the wrong index for lap times. Fix the others later
-											case 2:
-												p.lap2Gates = append(p.lap2Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-
-													p.raceTimes.lap1 = r.Time.float64 - p.raceTimes.holeshot
-													fmt.Println(live.Render(msgName, "Lap1:", strconv.FormatFloat(p.raceTimes.lap1, 'f', 3, 64)))
-												}
-											case 3:
-												p.lap3Gates = append(p.lap3Gates, r.Time.float64)
-												if r.Gate.int == 1 {
-													p.raceTimes.lap2 = r.Time.float64 - p.raceTimes.lap1 - p.raceTimes.holeshot
-													fmt.Println(live.Render(msgName, "Lap2:", strconv.FormatFloat(p.raceTimes.lap2, 'f', 3, 64)))
-												}
-												if r.Finished.bool {
-													p.raceTimes.lap3 = r.Time.float64 - p.raceTimes.lap2 - p.raceTimes.lap1 - p.raceTimes.holeshot
-													p.raceTimes.final = r.Time.float64
-													fmt.Println(live.Render(msgName, "Lap3:", strconv.FormatFloat(p.raceTimes.lap3, 'f', 3, 64)))
-												}
-											default:
-												fmt.Println("Unknown message header")
-												fmt.Printf("%s\n\n", string(message))
-											}
-										} else {
-											newPilot := pilot{name: msgName, uid: raceinfo.Uid}
-											if r.Lap.int == 1 && r.Gate.int == 1 {
-												newPilot.raceTimes.holeshot = raceinfo.Time.float64
-												raceData.pilots = append(raceData.pilots, newPilot)
-												fmt.Println(live.Render("New Pilot added:") + newPilot.name)
-												fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
-											}
-										}
-									}
 								}
 							}
 						}
