@@ -217,7 +217,11 @@ func msgHandler(done chan struct{}, conn *websocket.Conn, wg *sync.WaitGroup) {
 							for msgName, raceinfo := range value { //msg name is pilots name in msg, rename later
 								if len(raceData.pilots) == 0 {
 									//fmt.Println("empty pilot list")
-									newPilot := pilot{name: msgName, uid: raceinfo.Uid}
+									newPilot := pilot{
+										name: msgName,
+										uid:  raceinfo.Uid,
+									}
+									newPilot.raceTimes.holeshot = raceinfo.Time.float64
 									raceData.pilots = append(raceData.pilots, newPilot)
 									fmt.Println(live.Render("New Pilot added:"), newPilot.name)
 									fmt.Println(live.Render(msgName, "Holeshot:", strconv.FormatFloat(raceinfo.Time.float64, 'f', 3, 64)))
