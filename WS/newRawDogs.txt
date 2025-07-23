@@ -1,0 +1,234 @@
+
+m603h@k1tig-fn43 MINGW64 ~/go/projects/vd_tenPack/WS (main)
+$ go run main.go
+Settings loaded successfully...
+2025/07/22 23:38:53 connecting to ws://192.168.68.85:60003/velocidrone
+2025/07/22 23:38:53 Connected to VD
+{"spectatorChange":"k1tig"}
+{"spectatorChange":"k1tig"}
+{"racestatus":{"raceAction":"start"}}
+{"racetype":{"raceMode":"THREE_LAP_SINGLE_CLASS","raceFormat":"NORMAL","raceLaps":"3"}}
+
+**New Race Start**
+
+{"countdown":{"countValue":"5"}}
+{"countdown":{"countValue":"4"}}
+{"countdown":{"countValue":"3"}}
+{"countdown":{"countValue":"2"}}
+{"countdown":{"countValue":"1"}}
+{"countdown":{"countValue":"0"}}
+{"FinishGate":{"StartFinishGate":"True"}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"1","time":"1.519","finished":"False","colour":"FF00FF","uid":304901}}}
+New Pilot added: k1tig
+k1tig Holeshot: 1.519
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"2","time":"2.623","finished":"False","colour":"FF00FF","uid":304901}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"3","time":"3.200","finished":"False","colour":"FF00FF","uid":304901}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"4","time":"4.763","finished":"False","colour":"FF00FF","uid":304901}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"5","time":"5.547","finished":"False","colour":"FF00FF","uid":304901}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"6","time":"6.110","finished":"False","colour":"FF00FF","uid":304901}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"6","time":"6.110","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"1","time":"6.441","finished":"False","colour":"FF00FF","uid":188714}}}
+New Pilot added:Cyclimbo
+Cyclimbo Holeshot: 6.441
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"7","time":"6.727","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"1","time":"6.441","finished":"False","colour":"FF00FF","uid":188714}}}
+New Pilot added:Cyclimbo
+Cyclimbo Holeshot: 6.441
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"8","time":"7.464","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"1","time":"6.441","finished":"False","colour":"FF00FF","uid":188714}}}
+New Pilot added:Cyclimbo
+Cyclimbo Holeshot: 6.441
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"8","time":"7.464","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"2","time":"8.526","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"9","time":"9.451","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"2","time":"8.526","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"10","time":"10.443","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"2","time":"8.526","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"10","time":"10.443","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"3","time":"10.594","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"11","time":"11.728","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"3","time":"10.594","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"12","time":"12.451","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"3","time":"10.594","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"12","time":"12.451","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"4","time":"13.647","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"13","time":"13.861","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"4","time":"13.647","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"13","time":"13.861","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"5","time":"14.698","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"14","time":"15.006","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"5","time":"14.698","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"14","time":"15.006","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"6","time":"15.430","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"15","time":"16.291","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"6","time":"15.430","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"15","time":"16.291","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"7","time":"16.248","finished":"False","colour":"FF00FF","uid":188714}}}
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"16","time":"17.187","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"7","time":"16.248","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"17","time":"18.513","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"8","time":"18.483","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"1","gate":"18","time":"19.832","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"8","time":"18.483","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"1","time":"20.437","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"8","time":"18.483","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap1: 18.918
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"1","time":"20.437","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"9","time":"21.237","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap1: 18.918
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"2","time":"21.624","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"9","time":"21.237","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"3","time":"22.187","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"9","time":"21.237","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"3","time":"22.187","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"4","time":"24.040","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"5","time":"24.848","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"6","time":"25.443","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"7","time":"26.139","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"8","time":"26.819","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"9","time":"28.930","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"10","time":"29.896","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"10","time":"22.754","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"10","time":"29.896","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"11","time":"29.927","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"10","time":"29.896","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"11","time":"31.195","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"12","time":"31.812","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"13","time":"33.486","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"14","time":"34.464","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"15","time":"35.826","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"16","time":"36.722","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"12","time":"30.710","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"16","time":"36.722","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"13","time":"36.899","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"17","time":"37.645","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"13","time":"36.899","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"18","time":"38.868","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"13","time":"36.899","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"2","gate":"18","time":"38.868","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"14","time":"39.184","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"1","time":"39.444","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"14","time":"39.184","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap2: 19.007
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"2","time":"40.660","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"14","time":"39.184","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"2","time":"40.660","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"15","time":"40.635","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"3","time":"41.326","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"15","time":"40.635","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"3","time":"41.326","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"4","time":"43.167","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"5","time":"43.986","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"6","time":"44.561","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"7","time":"45.194","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"8","time":"45.853","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"9","time":"47.909","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"16","time":"41.836","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"9","time":"47.909","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"17","time":"48.359","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"10","time":"49.111","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"17","time":"48.359","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"10","time":"49.111","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"18","time":"49.761","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"11","time":"50.340","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"18","time":"49.761","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"12","time":"51.021","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"18","time":"49.761","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"13","time":"52.325","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"18","time":"49.761","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"14","time":"53.569","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"1","gate":"18","time":"49.761","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"14","time":"53.569","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"1","time":"53.614","finished":"False","colour":"FF00FF","uid":188714}}}
+Cyclimbo Lap1: 47.173
+Cyclimbo Lap1: 47.173
+Cyclimbo Lap1: 47.173
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"15","time":"54.903","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"1","time":"53.614","finished":"False","colour":"FF00FF","uid":188714}}}
+Cyclimbo Lap1: 47.173
+Cyclimbo Lap1: 47.173
+Cyclimbo Lap1: 47.173
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"15","time":"54.903","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"2","time":"55.232","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"16","time":"55.819","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"2","time":"55.232","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"17","time":"56.611","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"2","time":"55.232","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"18","time":"57.819","finished":"False","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"3","time":"57.717","finished":"False","colour":"FF00FF","uid":188714}}}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"3","time":"57.717","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"4","time":"64.373","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"5","time":"65.375","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"6","time":"66.091","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"7","time":"66.891","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"8","time":"68.744","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"9","time":"72.797","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"spectatorChange":"k1tig"}
+{"spectatorChange":"k1tig"}
+{"spectatorChange":"Cyclimbo"}
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"10","time":"75.232","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"11","time":"82.907","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"12","time":"84.356","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"13","time":"88.811","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"14","time":"90.880","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"15","time":"92.648","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"16","time":"93.931","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"17","time":"95.734","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"2","gate":"18","time":"97.884","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"1","time":"102.624","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+Cyclimbo Lap2: 49.010
+Cyclimbo Lap2: 49.010
+Cyclimbo Lap2: 49.010
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"2","time":"104.373","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"3","time":"108.109","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"4","time":"111.147","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"5","time":"112.199","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"6","time":"112.999","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"7","time":"113.848","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"8","time":"114.732","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"9","time":"117.453","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"10","time":"124.842","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"11","time":"127.125","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"12","time":"133.214","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"13","time":"135.751","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"14","time":"155.384","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"15","time":"156.985","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"16","time":"158.287","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"17","time":"160.188","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"18","time":"161.922","finished":"False","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+▒
+{"racedata":{"k1tig":{"position":"1","lap":"3","gate":"19","time":"58.319","finished":"True","colour":"FF00FF","uid":304901},"Cyclimbo":{"position":"2","lap":"3","gate":"19","time":"168.129","finished":"True","colour":"FF00FF","uid":188714}}}
+k1tig Lap3: 18.875
+Cyclimbo Lap3: 65.505
+Cyclimbo Lap3: 65.505
+Cyclimbo Lap3: 65.505
+{"racestatus":{"raceAction":"race finished"}}
+
+**Race Ended**
+
+
+~Accumulated Race Times~
+k1tig
+HoleShot: 1.519
+Lap1: 18.918
+Lap2: 19.007
+Lap3: 18.875
+Final: 58.319
+
+Cyclimbo
+HoleShot: 6.441
+Lap1: 47.173
+Lap2: 49.01
+Lap3: 65.505
+Final: 168.129
+
+Cyclimbo
+HoleShot: 6.441
+Lap1: 47.173
+Lap2: 49.01
+Lap3: 65.505
+Final: 168.129
+
+Cyclimbo
+HoleShot: 6.441
+Lap1: 47.173
+Lap2: 49.01
+Lap3: 65.505
+Final: 168.129
+
+k1tig
+Cyclimbo
+Cyclimbo
+Cyclimbo
+▒
