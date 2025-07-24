@@ -14,18 +14,31 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/gorilla/websocket"
 )
 
-var results = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("171"))
+// var results = lipgloss.NewStyle().
+//
+//	Bold(true).
+//	Foreground(lipgloss.Color("171"))
 var live = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("8"))
 var start = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("46"))
 var end = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("124"))
+
+var (
+	purple    = lipgloss.Color("99")
+	gray      = lipgloss.Color("86")
+	lightGray = lipgloss.Color("87")
+
+	headerStyle  = lipgloss.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
+	cellStyle    = lipgloss.NewStyle().Padding(0, 1).Width(14).Align(lipgloss.Center)
+	oddRowStyle  = cellStyle.Foreground(gray)
+	evenRowStyle = cellStyle.Foreground(lightGray)
+)
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
 var testServerBool = flag.Bool("tServer", true, "activates test server")
@@ -52,9 +65,10 @@ type pilot struct {
 	}
 }
 type race struct {
-	id      time.Time
-	aborted bool
-	pilots  []pilot
+	id             time.Time
+	aborted        bool
+	pilots         []pilot
+	finishedPilots int
 	//lastMsg []byte
 }
 
@@ -134,7 +148,6 @@ func main() {
 		}
 		messageStr := string(message)
 		messageCheck := []rune(messageStr)
-		//	fmt.Println(messageStr)
 		if messageCheck[0] != rune(65533) { // really need to figure out this message....
 			err = json.Unmarshal(message, &rawMsg)
 			if err != nil {
@@ -165,11 +178,11 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 			for _, raceAction := range raceStatus {
 				switch raceAction {
 				case "start":
-					started := "\n**New Race " + start.Render("Start") + "**\n"
-					fmt.Println(started)
-					r = &race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
+				//	started := "\n**New Race " + start.Render("Start") + "**\n"
+				//fmt.Println(started)
+				//	r = &race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
 				case "race finished": // need to handle submitting empty structs
-					ended := "\n**Race " + end.Render("Ended") + "**\n"
+				/*	ended := "\n**Race " + end.Render("Ended") + "**\n"
 					fmt.Println(ended)
 					fmt.Printf("\n~Accumulated Race Times~\n")
 					for _, r := range r.pilots {
@@ -188,7 +201,7 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 						for _, pilot := range i.pilots {
 							fmt.Println(pilot.name)
 						}
-					}
+					}*/
 				case "race aborted":
 					r = &race{
 						aborted: true,
@@ -206,10 +219,12 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 			if err != nil {
 				fmt.Println("Error unmarshaling 'racedata'", err)
 			}
+
 			for pilotName, pilotData := range msgData {
 				if len(r.pilots) == 0 {
-					//fmt.Println("empty pilot list")
-					fmt.Println("FirstNewPilotHit")
+					started := "\n**New Race " + start.Render("Start") + "**\n"
+					fmt.Println(started)
+					r.id = time.Now() //check this time is writting right later
 					newPilot := pilot{
 						name: pilotName,
 						uid:  pilotData.Uid,
@@ -218,14 +233,18 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 					r.pilots = append(r.pilots, newPilot)
 					fmt.Println(live.Render("New Pilot added:"), newPilot.name)
 					fmt.Println(live.Render(pilotName, "Holeshot:", strconv.FormatFloat(pilotData.Time.float64, 'f', 3, 64)))
-					break
 				} else {
 					rMsg := &pilotData
+					pilotFound := false
 					for i, racer := range r.pilots {
 						p := &r.pilots[i]
 
 						if pilotName == racer.name {
 							if p.lastMsg != pilotData {
+								if pilotData.Finished.bool {
+									raceData.finishedPilots++
+								}
+
 								switch rMsg.Lap.int {
 								case 1:
 									p.lap1Gates = append(p.lap1Gates, rMsg.Time.float64)
@@ -253,17 +272,70 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									fmt.Println("Unknown message header")
 									fmt.Printf("%s\n\n", string(message))
 								}
-							} else {
-								newPilot := pilot{name: pilotName, uid: pilotData.Uid}
-								if rMsg.Lap.int == 1 && rMsg.Gate.int == 1 {
-									newPilot.raceTimes.holeshot = pilotData.Time.float64
-									newPilot.lastMsg = pilotData
-									r.pilots = append(r.pilots, newPilot)
-									fmt.Println(live.Render("New Pilot added:") + newPilot.name)
-									fmt.Println(live.Render(pilotName, "Holeshot:", strconv.FormatFloat(pilotData.Time.float64, 'f', 3, 64)))
-									break
-								}
 							}
+							pilotFound = true
+							if raceData.finishedPilots == len(raceData.pilots) {
+								ended := "\n**Race " + end.Render("Ended") + "**\n"
+								fmt.Println(ended)
+								fmt.Printf("\n  ~Accumulated Race Times~\n\n")
+
+								rows := [][]string{}
+
+								for _, r := range r.pilots {
+									//	fmt.Println(results.Render(r.name))
+									//	fmt.Println("HoleShot:", r.raceTimes.holeshot)
+									//	fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
+									//	fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
+									//	fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
+									//fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
+									lap1 := strconv.FormatFloat(r.raceTimes.lap1, 'f', 2, 64)
+									lap2 := strconv.FormatFloat(r.raceTimes.lap2, 'f', 2, 64)
+									lap3 := strconv.FormatFloat(r.raceTimes.lap3, 'f', 2, 64)
+									final := strconv.FormatFloat(r.raceTimes.final, 'f', 2, 64)
+
+									pilotRow := []string{r.name, lap1, lap2, lap3, final}
+									rows = append(rows, pilotRow)
+								}
+
+								t := table.New().
+									Border(lipgloss.NormalBorder()).
+									BorderStyle(lipgloss.NewStyle().Foreground(purple)).
+									StyleFunc(func(row, col int) lipgloss.Style {
+										switch {
+										case row == table.HeaderRow:
+											return headerStyle
+										case row%2 == 0:
+											return evenRowStyle
+										default:
+											return oddRowStyle
+										}
+									}).
+									Headers("Pilot", "Lap 1", "Lap 2", "Lap 3", "Final").
+									Rows(rows...)
+
+								fmt.Println(t)
+								raceFinal := *r
+								raceRecords = append(raceRecords, raceFinal)
+								raceCounter++
+								/*for _, i := range raceRecords {
+									fmt.Println("Race-")
+									for _, pilot := range i.pilots {
+										fmt.Println(pilot.name)
+									}
+								}*/
+								raceData = race{}
+								break
+							}
+						}
+					}
+					if !pilotFound {
+						newPilot := pilot{name: pilotName, uid: pilotData.Uid}
+						if rMsg.Lap.int == 1 && rMsg.Gate.int == 1 {
+							newPilot.raceTimes.holeshot = pilotData.Time.float64
+							newPilot.lastMsg = pilotData
+							r.pilots = append(r.pilots, newPilot)
+							fmt.Println(live.Render("New Pilot added:") + newPilot.name)
+							fmt.Println(live.Render(pilotName, "Holeshot:", strconv.FormatFloat(pilotData.Time.float64, 'f', 3, 64)))
 						}
 					}
 				}
