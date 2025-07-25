@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -284,10 +285,10 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 
 								rows := [][]string{}
 								var t1, t2, t3, fin float64
-								/*sort.Slice(r.pilots, func(i, j int) bool { // yeet this is it's fucked
+								sort.Slice(r.pilots, func(i, j int) bool { // yeet this is it's fucked
 
 									return r.pilots[i].raceTimes.final < r.pilots[j].raceTimes.final
-								})*/
+								})
 
 								for _, r := range r.pilots {
 									//	fmt.Println(results.Render(r.name))
@@ -311,6 +312,7 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 										t1 = r1
 									} else {
 										if r1 < t1 {
+											t1 = r1
 										}
 									}
 									if t2 == 0 {
