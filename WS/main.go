@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -38,6 +39,8 @@ var (
 	cellStyle    = lipgloss.NewStyle().Padding(0, 1).Width(14).Align(lipgloss.Center)
 	oddRowStyle  = cellStyle.Foreground(gray)
 	evenRowStyle = cellStyle.Foreground(lightGray)
+	re           = lipgloss.NewRenderer(os.Stdout)
+	baseStyle    = re.NewStyle().Padding(0, 1)
 )
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
@@ -280,6 +283,11 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 								fmt.Printf("\n  ~Accumulated Race Times~\n\n")
 
 								rows := [][]string{}
+								var t1, t2, t3, fin float64
+								/*sort.Slice(r.pilots, func(i, j int) bool { // yeet this is it's fucked
+
+									return r.pilots[i].raceTimes.final < r.pilots[j].raceTimes.final
+								})*/
 
 								for _, r := range r.pilots {
 									//	fmt.Println(results.Render(r.name))
@@ -288,10 +296,44 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									//	fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
 									//	fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
 									//fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
-									lap1 := strconv.FormatFloat(r.raceTimes.lap1, 'f', 2, 64)
-									lap2 := strconv.FormatFloat(r.raceTimes.lap2, 'f', 2, 64)
-									lap3 := strconv.FormatFloat(r.raceTimes.lap3, 'f', 2, 64)
-									final := strconv.FormatFloat(r.raceTimes.final, 'f', 2, 64)
+
+									r1 := roundFloat(r.raceTimes.lap1, 3)
+									r2 := roundFloat(r.raceTimes.lap2, 3)
+									r3 := roundFloat(r.raceTimes.lap3, 3)
+									rf := roundFloat(r.raceTimes.final, 3)
+
+									lap1 := strconv.FormatFloat(r.raceTimes.lap1, 'f', 3, 64)
+									lap2 := strconv.FormatFloat(r.raceTimes.lap2, 'f', 3, 64)
+									lap3 := strconv.FormatFloat(r.raceTimes.lap3, 'f', 3, 64)
+									final := strconv.FormatFloat(r.raceTimes.final, 'f', 3, 64)
+
+									if t1 == 0 {
+										t1 = r1
+									} else {
+										if r1 < t1 {
+										}
+									}
+									if t2 == 0 {
+										t2 = r2
+									} else {
+										if r2 < t2 {
+											t2 = r2
+										}
+									}
+									if t3 == 0 {
+										t3 = r3
+									} else {
+										if r3 < t3 {
+											t3 = r3
+										}
+									}
+									if fin == 0 {
+										fin = rf
+									} else {
+										if rf < fin {
+											fin = rf
+										}
+									}
 
 									pilotRow := []string{r.name, lap1, lap2, lap3, final}
 									rows = append(rows, pilotRow)
@@ -301,14 +343,59 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									Border(lipgloss.NormalBorder()).
 									BorderStyle(lipgloss.NewStyle().Foreground(purple)).
 									StyleFunc(func(row, col int) lipgloss.Style {
-										switch {
-										case row == table.HeaderRow:
+										if row == table.HeaderRow {
 											return headerStyle
-										case row%2 == 0:
-											return evenRowStyle
-										default:
-											return oddRowStyle
 										}
+										even := row%2 == 0
+
+										switch col {
+										case 1:
+											cellValue, err := strconv.ParseFloat(rows[row][1], 64)
+											if err != nil {
+												fmt.Println("Error converting string to float:", err)
+											}
+											if cellValue <= t1 {
+												return baseStyle.Foreground(lipgloss.Color("#5ede58ff"))
+											} else {
+												return baseStyle.Foreground(lipgloss.Color("#bb27b9ff"))
+											}
+
+										case 2:
+											cellValue, err := strconv.ParseFloat(rows[row][2], 64)
+											if err != nil {
+												fmt.Println("Error converting string to float:", err)
+											}
+											if cellValue <= t2 {
+												return baseStyle.Foreground(lipgloss.Color("#5ede58ff"))
+											} else {
+												return baseStyle.Foreground(lipgloss.Color("#bb27b9ff"))
+											}
+										case 3:
+											cellValue, err := strconv.ParseFloat(rows[row][3], 64)
+											if err != nil {
+												fmt.Println("Error converting string to float:", err)
+											}
+											if cellValue <= t3 {
+												return baseStyle.Foreground(lipgloss.Color("#5ede58ff"))
+											} else {
+												return baseStyle.Foreground(lipgloss.Color("#bb27b9ff"))
+											}
+										case 4:
+											cellValue, err := strconv.ParseFloat(rows[row][4], 64)
+											if err != nil {
+												fmt.Println("Error converting string to float:", err)
+											}
+											if cellValue <= fin {
+												return baseStyle.Foreground(lipgloss.Color("#5ede58ff"))
+											} else {
+												return baseStyle.Foreground(lipgloss.Color("#bb27b9ff"))
+											}
+										}
+
+										if even {
+											return evenRowStyle
+										}
+										return oddRowStyle
 									}).
 									Headers("Pilot", "Lap 1", "Lap 2", "Lap 3", "Final").
 									Rows(rows...)
