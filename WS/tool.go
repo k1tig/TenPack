@@ -155,12 +155,38 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(purple)).
 		Headers(headerRow...).
+		StyleFunc(func(row, col int) lipgloss.Style {
+			if row == table.HeaderRow {
+				return headerStyle
+			} else {
+				num := rows[row][col]
+				floatVal, err := strconv.ParseFloat(num, 64)
+				val := roundFloat(floatVal, 3)
+				if err != nil {
+					fmt.Println(err)
+				}
+				ltStyle := false
+				for _, num := range cleanLS {
+					if val == num {
+						ltStyle = true
+					}
+				}
+				switch {
+				case val > 0 && !ltStyle:
+					return baseStyle.Foreground(lipgloss.Color("#de5f58ff"))
+				case val < 0 && !ltStyle:
+					return baseStyle.Foreground(lipgloss.Color("#2cee17ff"))
+				default:
+					return baseStyle.Foreground(lipgloss.Color("#35bff5ff"))
+				}
+			}
+		}).
 		Rows(rows...)
 
 	return t
 }
 
-func (r race) leadSplits(split ...int) (*table.Table, []float64) { // 2,6,16,18,22,24,26
+func (r race) leadSplits(split ...int) []float64 { // 2,6,16,18,22,24,26
 	var splitTimes []float64
 	var pilotGateList []float64
 	var hotLap int
@@ -201,31 +227,14 @@ func (r race) leadSplits(split ...int) (*table.Table, []float64) { // 2,6,16,18,
 		splitTimes = findSplitTimes(pilotGateList)
 
 	}
-	headerRow := []string{}
 
-	for i := range splitTimes {
-		header := "Split " + strconv.Itoa(i+1)
-		headerRow = append(headerRow, header)
-	}
-
-	var rows [][]string
-	var row []string
 	var floatSplitTimes []float64
 	for _, i := range splitTimes {
 		i = roundFloat(i, 3)
 		floatSplitTimes = append(floatSplitTimes, i)
-		x := strconv.FormatFloat(i, 'f', -1, 64)
-		row = append(row, x)
 	}
-	rows = append(rows, row)
 
-	t := table.New().
-		Border(lipgloss.NormalBorder()).
-		BorderStyle(lipgloss.NewStyle().Foreground(purple)).
-		Headers(headerRow...).
-		Rows(rows...)
-
-	return t, floatSplitTimes
+	return floatSplitTimes
 
 }
 

@@ -404,12 +404,12 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 
 								fmt.Println(t)
 								var trackSplits = []int{2, 6, 16, 18, 22, 24, 26}
-								telem, leadTelem := r.leadSplits(trackSplits...)
-								fmt.Println(telem) // Leader Lap Split times
+								leadTelem := r.leadSplits(trackSplits...)
 
 								for _, pilot := range r.pilots {
 									pSplit := pilotSplits(pilot, leadTelem, trackSplits...)
-									fmt.Println("Pilot: ", pilot.name)
+									title := "\nPilot: " + pilot.name
+									fmt.Println(baseStyle.Render(title))
 									fmt.Println(pSplit)
 								}
 
