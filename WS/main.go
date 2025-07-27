@@ -403,6 +403,16 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									Rows(rows...)
 
 								fmt.Println(t)
+								var trackSplits = []int{2, 6, 16, 18, 22, 24, 26}
+								telem, leadTelem := r.leadSplits(trackSplits...)
+								fmt.Println(telem) // Leader Lap Split times
+
+								for _, pilot := range r.pilots {
+									pSplit := pilotSplits(pilot, leadTelem, trackSplits...)
+									fmt.Println("Pilot: ", pilot.name)
+									fmt.Println(pSplit)
+								}
+
 								raceFinal := *r
 								raceRecords = append(raceRecords, raceFinal)
 								raceCounter++
@@ -452,3 +462,10 @@ func pingGenerator(done chan struct{}, c *websocket.Conn) {
 		}
 	}
 }
+
+/*
+List of tables order by finish order that has data relative to the fastest lap in the race.
+Each table has the pilot and their 3 laps.
+Set fast lap record during race with a race.pilot[i].racetimes.FinalLap for reference later
+
+*/

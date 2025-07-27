@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"slices"
 	"strconv"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 )
 
 type intConvert struct{ int }
@@ -70,4 +74,168 @@ func (boolC *boolConvert) UnmarshalJSON(data []byte) error {
 func roundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
+}
+
+func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
+	var splitTimes [][]float64
+
+	var (
+		lap1Gates []float64
+		lap2Gates []float64
+		lap3Gates []float64
+	)
+
+	lap1Gates = append(lap1Gates, pilot.lap1Gates[0])
+	for _, i := range split {
+		lap1Gates = append(lap1Gates, pilot.lap1Gates[i])
+	}
+	lap1Gates = append(lap1Gates, pilot.lap2Gates[0])
+	splitLap1 := findSplitTimes(lap1Gates)
+
+	/////////
+	lap2Gates = append(lap2Gates, pilot.lap2Gates[0])
+	for _, i := range split {
+
+		lap2Gates = append(lap2Gates, pilot.lap2Gates[i])
+	}
+	lap2Gates = append(lap2Gates, pilot.lap3Gates[0])
+	splitLap2 := findSplitTimes(lap2Gates)
+
+	//////////
+	lap3Gates = append(lap3Gates, pilot.lap3Gates[0])
+	for _, i := range split {
+		lap3Gates = append(lap3Gates, pilot.lap3Gates[i])
+	}
+	lap3Gates = append(lap3Gates, pilot.lap3Gates[len(pilot.lap3Gates)-1])
+	splitLap3 := findSplitTimes(lap3Gates)
+
+	var rows [][]string
+	rawTimes := append(splitTimes, splitLap1, splitLap2, splitLap3)
+	var cleanLS []float64
+
+	for _, i := range leadSplit {
+		num := roundFloat(i, 3)
+		cleanLS = append(cleanLS, num)
+	}
+
+	for _, i := range rawTimes {
+		var cleanLap []float64
+		for _, x := range i {
+			num := roundFloat(x, 3)
+			cleanLap = append(cleanLap, num)
+		}
+		t := slices.Equal(cleanLap, cleanLS)
+		if !t {
+			var row []string
+			for index, pTime := range i {
+				diff := pTime - leadSplit[index]
+				num := roundFloat(diff, 3)
+				x := strconv.FormatFloat(num, 'f', -1, 64)
+				row = append(row, x)
+			}
+			rows = append(rows, row)
+		} else {
+			var row []string
+			for _, pTime := range i {
+				num := roundFloat(pTime, 3)
+				x := strconv.FormatFloat(num, 'f', -1, 64)
+				row = append(row, x)
+			}
+			rows = append(rows, row)
+		}
+	}
+
+	headerRow := []string{}
+	for i := range rows[0] {
+		header := "Split " + strconv.Itoa(i+1)
+		headerRow = append(headerRow, header)
+	}
+
+	t := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(purple)).
+		Headers(headerRow...).
+		Rows(rows...)
+
+	return t
+}
+
+func (r race) leadSplits(split ...int) (*table.Table, []float64) { // 2,6,16,18,22,24,26
+	var splitTimes []float64
+	var pilotGateList []float64
+	var hotLap int
+
+	topPilot := r.pilots[0]
+	if topPilot.raceTimes.lap1 < topPilot.raceTimes.lap2 {
+		hotLap = 1
+	} else {
+		if topPilot.raceTimes.lap2 < topPilot.raceTimes.lap3 {
+			hotLap = 2
+		} else {
+			hotLap = 3
+		}
+
+	}
+	switch hotLap {
+	case 1:
+		pilotGateList = append(pilotGateList, topPilot.lap1Gates[0])
+		for _, i := range split {
+			pilotGateList = append(pilotGateList, topPilot.lap1Gates[i])
+		}
+		pilotGateList = append(pilotGateList, topPilot.lap2Gates[0])
+		splitTimes = findSplitTimes(pilotGateList)
+
+	case 2:
+		pilotGateList = append(pilotGateList, topPilot.lap2Gates[0])
+		for _, i := range split {
+			pilotGateList = append(pilotGateList, topPilot.lap2Gates[i])
+		}
+		pilotGateList = append(pilotGateList, topPilot.lap3Gates[0])
+		splitTimes = findSplitTimes(pilotGateList)
+	case 3:
+		pilotGateList = append(pilotGateList, topPilot.lap3Gates[0])
+		for _, i := range split {
+			pilotGateList = append(pilotGateList, topPilot.lap3Gates[i])
+		}
+		pilotGateList = append(pilotGateList, topPilot.lap3Gates[len(topPilot.lap3Gates)-1])
+		splitTimes = findSplitTimes(pilotGateList)
+
+	}
+	headerRow := []string{}
+
+	for i := range splitTimes {
+		header := "Split " + strconv.Itoa(i+1)
+		headerRow = append(headerRow, header)
+	}
+
+	var rows [][]string
+	var row []string
+	var floatSplitTimes []float64
+	for _, i := range splitTimes {
+		i = roundFloat(i, 3)
+		floatSplitTimes = append(floatSplitTimes, i)
+		x := strconv.FormatFloat(i, 'f', -1, 64)
+		row = append(row, x)
+	}
+	rows = append(rows, row)
+
+	t := table.New().
+		Border(lipgloss.NormalBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(purple)).
+		Headers(headerRow...).
+		Rows(rows...)
+
+	return t, floatSplitTimes
+
+}
+
+func findSplitTimes(nums []float64) []float64 {
+	var numList []float64
+	numLen := len(nums)
+
+	for i := 1; i < numLen; i++ {
+		x := nums[i] - nums[i-1]
+		numList = append(numList, x)
+	}
+	return numList
 }
