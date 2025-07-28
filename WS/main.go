@@ -403,7 +403,7 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									Rows(rows...)
 
 								fmt.Println(t)
-								var trackSplits = []int{2, 6, 16, 18, 22, 24, 26}
+								var trackSplits = []int{3, 8} // neon: 2,9,15,19,20,25  //CAWFB: 2, 6, 16, 18, 22, 24, 26 //caw: 3,8
 								leadTelem := r.leadSplits(trackSplits...)
 
 								for _, pilot := range r.pilots {
