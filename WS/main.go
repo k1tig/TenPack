@@ -9,7 +9,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"sort"
 	"strconv"
 	"sync"
@@ -18,30 +17,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/gorilla/websocket"
-)
-
-// var results = lipgloss.NewStyle().
-//
-//	Bold(true).
-//	Foreground(lipgloss.Color("171"))
-var live = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("8"))
-var start = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("46"))
-var end = lipgloss.NewStyle().
-	Foreground(lipgloss.Color("124"))
-
-var (
-	purple    = lipgloss.Color("99")
-	gray      = lipgloss.Color("86")
-	lightGray = lipgloss.Color("87")
-
-	headerStyle  = lipgloss.NewStyle().Foreground(purple).Bold(true).Align(lipgloss.Center)
-	cellStyle    = lipgloss.NewStyle().Padding(0, 1).Width(14).Align(lipgloss.Center)
-	oddRowStyle  = cellStyle.Foreground(gray)
-	evenRowStyle = cellStyle.Foreground(lightGray)
-	re           = lipgloss.NewRenderer(os.Stdout)
-	baseStyle    = re.NewStyle().Padding(0, 1)
 )
 
 var localAddress = flag.String("ipAddress", "none", "static local address")
@@ -109,13 +84,11 @@ func main() {
 	if foundTServerFlag {
 		testFlag = *testServerBool
 	}
-
 	var urlStr string
 	if testFlag {
 		urlStr = "ws://" + userSettings.IpAddr + ":8080/ws"
 		//u = url.URL{Scheme: "ws", Host: userSettings.IpAddr, Path: wsPath}
 	} else {
-
 		urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
 
 	}
@@ -141,7 +114,6 @@ func main() {
 	}
 	defer conn.Close()
 	go pingGenerator(done, conn)
-
 	for {
 		var rawMsg map[string]json.RawMessage
 		_, message, err := conn.ReadMessage()
@@ -181,11 +153,11 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 			}
 			for _, raceAction := range raceStatus {
 				switch raceAction {
-				case "start":
+				case "start": // Can't use til Ash fixes API data for non-host
 				//	started := "\n**New Race " + start.Render("Start") + "**\n"
 				//fmt.Println(started)
 				//	r = &race{id: time.Now()} // need to ensure this erases other fields when writing new timestamp
-				case "race finished": // need to handle submitting empty structs
+				case "race finished": // Can't use til Ash fixes API data for non-host
 				/*	ended := "\n**Race " + end.Render("Ended") + "**\n"
 					fmt.Println(ended)
 					fmt.Printf("\n~Accumulated Race Times~\n")
@@ -223,7 +195,6 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 			if err != nil {
 				fmt.Println("Error unmarshaling 'racedata'", err)
 			}
-
 			for pilotName, pilotData := range msgData {
 				if len(r.pilots) == 0 {
 					started := "\n**New Race " + start.Render("Start") + "**\n"
@@ -234,6 +205,7 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 						uid:  pilotData.Uid,
 					}
 					newPilot.raceTimes.holeshot = pilotData.Time.float64
+					newPilot.lap1Gates = append(newPilot.lap1Gates, pilotData.Time.float64)
 					r.pilots = append(r.pilots, newPilot)
 					fmt.Println(live.Render("New Pilot added:"), newPilot.name)
 					fmt.Println(live.Render(pilotName, "Holeshot:", strconv.FormatFloat(pilotData.Time.float64, 'f', 3, 64)))
@@ -291,13 +263,6 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 								})
 
 								for _, r := range r.pilots {
-									//	fmt.Println(results.Render(r.name))
-									//	fmt.Println("HoleShot:", r.raceTimes.holeshot)
-									//	fmt.Println("Lap1:", roundFloat((r.raceTimes.lap1), 3))
-									//	fmt.Println("Lap2:", roundFloat((r.raceTimes.lap2), 3))
-									//	fmt.Println("Lap3:", roundFloat((r.raceTimes.lap3), 3))
-									//fmt.Printf("Final: %v\n\n", roundFloat((r.raceTimes.final), 3))
-
 									r1 := roundFloat(r.raceTimes.lap1, 3)
 									r2 := roundFloat(r.raceTimes.lap2, 3)
 									r3 := roundFloat(r.raceTimes.lap3, 3)
@@ -401,9 +366,13 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									}).
 									Headers("Pilot", "Lap 1", "Lap 2", "Lap 3", "Final").
 									Rows(rows...)
-
 								fmt.Println(t)
-								var trackSplits = []int{3, 8} // neon: 2,9,15,19,20,25  //CAWFB: 2, 6, 16, 18, 22, 24, 26 //caw: 3,8
+								splitTotal := len(r.pilots[0].lap1Gates)
+								var gateSplits []int
+								for i := 1; i < splitTotal; i++ {
+									gateSplits = append(gateSplits, i)
+								}
+								var trackSplits = gateSplits //[]int{} // neon: 2,9,15,19,20,25  //CAWFB: 2, 6, 16, 18, 22, 24, 26 //caw: 3,8
 								leadTelem := r.leadSplits(trackSplits...)
 
 								for _, pilot := range r.pilots {
@@ -443,6 +412,7 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 	}
 }
 
+// fix this stupid thing later. Git Gud.
 func pingGenerator(done chan struct{}, c *websocket.Conn) {
 	for {
 		select {
@@ -462,10 +432,3 @@ func pingGenerator(done chan struct{}, c *websocket.Conn) {
 		}
 	}
 }
-
-/*
-List of tables order by finish order that has data relative to the fastest lap in the race.
-Each table has the pilot and their 3 laps.
-Set fast lap record during race with a race.pilot[i].racetimes.FinalLap for reference later
-
-*/

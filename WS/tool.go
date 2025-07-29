@@ -85,12 +85,13 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 		lap3Gates []float64
 	)
 
+	//////////// Holeshot is gate 1!!!!!///////////
 	lap1Gates = append(lap1Gates, pilot.lap1Gates[0])
 	for _, i := range split {
 		lap1Gates = append(lap1Gates, pilot.lap1Gates[i])
 	}
 	lap1Gates = append(lap1Gates, pilot.lap2Gates[0])
-	splitLap1 := findSplitTimes(lap1Gates)
+	splitTimes = append(splitTimes, findSplitTimes(lap1Gates))
 
 	/////////
 	lap2Gates = append(lap2Gates, pilot.lap2Gates[0])
@@ -99,32 +100,22 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 		lap2Gates = append(lap2Gates, pilot.lap2Gates[i])
 	}
 	lap2Gates = append(lap2Gates, pilot.lap3Gates[0])
-	splitLap2 := findSplitTimes(lap2Gates)
-
-	//////////
+	splitTimes = append(splitTimes, findSplitTimes(lap2Gates))
 	lap3Gates = append(lap3Gates, pilot.lap3Gates[0])
 	for _, i := range split {
 		lap3Gates = append(lap3Gates, pilot.lap3Gates[i])
 	}
 	lap3Gates = append(lap3Gates, pilot.lap3Gates[len(pilot.lap3Gates)-1])
-	splitLap3 := findSplitTimes(lap3Gates)
+	splitTimes = append(splitTimes, findSplitTimes(lap3Gates))
 
 	var rows [][]string
-	rawTimes := append(splitTimes, splitLap1, splitLap2, splitLap3)
-	var cleanLS []float64
-
-	for _, i := range leadSplit {
-		num := roundFloat(i, 3)
-		cleanLS = append(cleanLS, num)
-	}
-
-	for _, i := range rawTimes {
+	for _, i := range splitTimes {
 		var cleanLap []float64
 		for _, x := range i {
 			num := roundFloat(x, 3)
 			cleanLap = append(cleanLap, num)
 		}
-		t := slices.Equal(cleanLap, cleanLS)
+		t := slices.Equal(cleanLap, leadSplit)
 		if !t {
 			var row []string
 			for index, pTime := range i {
@@ -144,13 +135,11 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 			rows = append(rows, row)
 		}
 	}
-
 	headerRow := []string{}
 	for i := range rows[0] {
 		header := "Split " + strconv.Itoa(i+1)
 		headerRow = append(headerRow, header)
 	}
-
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(purple)).
@@ -160,13 +149,12 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 				return headerStyle
 			} else {
 				num := rows[row][col]
-				floatVal, err := strconv.ParseFloat(num, 64)
-				val := roundFloat(floatVal, 3)
+				val, err := strconv.ParseFloat(num, 64)
 				if err != nil {
 					fmt.Println(err)
 				}
 				ltStyle := false
-				for _, num := range cleanLS {
+				for _, num := range leadSplit {
 					if val == num {
 						ltStyle = true
 					}
@@ -182,7 +170,6 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 			}
 		}).
 		Rows(rows...)
-
 	return t
 }
 
@@ -190,7 +177,6 @@ func (r race) leadSplits(split ...int) []float64 { // 2,6,16,18,22,24,26
 	var splitTimes []float64
 	var pilotGateList []float64
 	var hotLap int
-
 	topPilot := r.pilots[0]
 	if topPilot.raceTimes.lap1 < topPilot.raceTimes.lap2 {
 		hotLap = 1
@@ -200,7 +186,6 @@ func (r race) leadSplits(split ...int) []float64 { // 2,6,16,18,22,24,26
 		} else {
 			hotLap = 3
 		}
-
 	}
 	switch hotLap {
 	case 1:
@@ -227,21 +212,17 @@ func (r race) leadSplits(split ...int) []float64 { // 2,6,16,18,22,24,26
 		splitTimes = findSplitTimes(pilotGateList)
 
 	}
-
 	var floatSplitTimes []float64
 	for _, i := range splitTimes {
 		i = roundFloat(i, 3)
 		floatSplitTimes = append(floatSplitTimes, i)
 	}
-
 	return floatSplitTimes
-
 }
 
 func findSplitTimes(nums []float64) []float64 {
 	var numList []float64
 	numLen := len(nums)
-
 	for i := 1; i < numLen; i++ {
 		x := nums[i] - nums[i-1]
 		numList = append(numList, x)
