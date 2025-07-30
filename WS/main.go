@@ -24,7 +24,9 @@ var testServerBool = flag.Bool("tServer", true, "activates test server")
 var testFlag bool
 
 type settings struct {
-	IpAddr string `json:"IP_ADDR"`
+	IpAddr    string `json:"IP_ADDR"`
+	LapSplits []int  `json:"SPLITS"`
+	TrackName string `json:"TRACKNAME"`
 }
 
 type raceInfo struct {
@@ -57,10 +59,10 @@ var raceCounter = 0    //packlimit
 var mu sync.Mutex
 
 func main() {
-	var userSettings settings
+	var UserSettings settings
 	done := make(chan struct{})
 
-	err := readJSONFromFile("settings.json", &userSettings)
+	err := readJSONFromFile("settings.json", &UserSettings)
 	if err != nil {
 		log.Fatalf("Error reading JSON: %v", err)
 	}
@@ -74,7 +76,7 @@ func main() {
 		}
 	})
 	if foundIpFlag {
-		userSettings.IpAddr = *localAddress
+		UserSettings.IpAddr = *localAddress
 	}
 	flag.Visit(func(f *flag.Flag) { //this seems fucked up. learn about flags
 		if f.Name == "tServer" {
@@ -86,10 +88,10 @@ func main() {
 	}
 	var urlStr string
 	if testFlag {
-		urlStr = "ws://" + userSettings.IpAddr + ":8080/ws"
+		urlStr = "ws://" + UserSettings.IpAddr + ":8080/ws"
 		//u = url.URL{Scheme: "ws", Host: userSettings.IpAddr, Path: wsPath}
 	} else {
-		urlStr = "ws://" + userSettings.IpAddr + ":60003/velocidrone"
+		urlStr = "ws://" + UserSettings.IpAddr + ":60003/velocidrone"
 
 	}
 
@@ -105,7 +107,7 @@ func main() {
 	} else {
 		log.Println("Connected to VD")
 		if foundIpFlag && !foundTServerFlag {
-			err := writeJSONToFile("settings.json", userSettings)
+			err := writeJSONToFile("settings.json", UserSettings)
 			if err != nil {
 				log.Fatalf("Error writing JSON: %v", err)
 			}
@@ -132,11 +134,11 @@ func main() {
 			}
 		}
 		//fmt.Println(messageStr)
-		go raceData.msgHandler(message, rawMsg)
+		go raceData.msgHandler(message, rawMsg, UserSettings)
 	}
 }
 
-func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
+func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage, userSettings settings) {
 	mu.Lock()
 	defer mu.Unlock()
 	for key, rawJson := range rawMsg {
@@ -253,7 +255,13 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 							if raceData.finishedPilots == len(raceData.pilots) {
 								ended := "\n**Race " + end.Render("Ended") + "**\n"
 								fmt.Println(ended)
-								fmt.Printf("\n  ~Accumulated Race Times~\n\n")
+								var trackName string
+								if userSettings.TrackName != "" {
+									trackName = userSettings.TrackName
+									fmt.Printf("\n  ~Accumulated Race Times: %s~\n\n", trackName)
+								} else {
+									fmt.Printf("\n  ~Accumulated Race Times~\n\n")
+								}
 
 								rows := [][]string{}
 								var t1, t2, t3, fin float64
@@ -358,7 +366,6 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 												return baseStyle.Foreground(lipgloss.Color("#bb27b9ff"))
 											}
 										}
-
 										if even {
 											return evenRowStyle
 										}
@@ -367,16 +374,20 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 									Headers("Pilot", "Lap 1", "Lap 2", "Lap 3", "Final").
 									Rows(rows...)
 								fmt.Println(t)
-								splitTotal := len(r.pilots[0].lap1Gates)
-								var gateSplits []int
-								for i := 1; i < splitTotal; i++ {
-									gateSplits = append(gateSplits, i)
-								}
-								var trackSplits = gateSplits //[]int{} // neon: 2,9,15,19,20,25  //CAWFB: 2, 6, 16, 18, 22, 24, 26 //caw: 3,8
-								leadTelem := r.leadSplits(trackSplits...)
 
+								var gateSplits []int
+								if userSettings.LapSplits != nil {
+									gateSplits = append(gateSplits, userSettings.LapSplits...)
+								} else {
+									splitTotal := len(r.pilots[0].lap1Gates) /// make a flag for this?
+									for i := 1; i < splitTotal; i++ {
+										gateSplits = append(gateSplits, i)
+									}
+								}
+
+								leadTelem := r.leadSplits(gateSplits...)
 								for _, pilot := range r.pilots {
-									pSplit := pilotSplits(pilot, leadTelem, trackSplits...)
+									pSplit := pilotSplits(pilot, leadTelem, gateSplits...)
 									title := "\nPilot: " + pilot.name
 									fmt.Println(baseStyle.Render(title))
 									fmt.Println(pSplit)
@@ -385,12 +396,6 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage) {
 								raceFinal := *r
 								raceRecords = append(raceRecords, raceFinal)
 								raceCounter++
-								/*for _, i := range raceRecords {
-									fmt.Println("Race-")
-									for _, pilot := range i.pilots {
-										fmt.Println(pilot.name)
-									}
-								}*/
 								raceData = race{}
 								break
 							}

@@ -1,3 +1,5 @@
 {
-  "IP_ADDR": "192.168.68.85"
+  "IP_ADDR": "192.168.68.85",
+  "SPLITS": [7,17,23,33],
+  "TRACKNAME": "FMV - LazE Classic (July31)"
 }
