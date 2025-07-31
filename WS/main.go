@@ -375,14 +375,32 @@ func (r *race) msgHandler(message []byte, rawMsg map[string]json.RawMessage, use
 									Rows(rows...)
 								fmt.Println(t)
 
+								var settingsSplits []int
 								var gateSplits []int
 								if userSettings.LapSplits != nil {
-									gateSplits = append(gateSplits, userSettings.LapSplits...)
+									settingsSplits = append(settingsSplits, userSettings.LapSplits...)
 								} else {
 									splitTotal := len(r.pilots[0].lap1Gates) /// make a flag for this?
 									for i := 1; i < splitTotal; i++ {
+										settingsSplits = append(settingsSplits, i)
+									}
+								}
+								//Checks gate length total from settings
+								totalTrackGates := len(r.pilots[0].lap1Gates)
+								var lastUserGate = 0
+								for _, i := range settingsSplits {
+									if i > lastUserGate {
+										lastUserGate = i
+									}
+								}
+								if lastUserGate > totalTrackGates {
+									fmt.Println("Attention, gate count from settings exceeds total track gates")
+									gateSplits = []int{}
+									for i := 1; i < totalTrackGates; i++ {
 										gateSplits = append(gateSplits, i)
 									}
+								} else {
+									gateSplits = settingsSplits
 								}
 
 								leadTelem := r.leadSplits(gateSplits...)

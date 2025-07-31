@@ -85,6 +85,22 @@ func pilotSplits(pilot pilot, leadSplit []float64, split ...int) *table.Table {
 		lap3Gates []float64
 	)
 
+	//this could be brought out of the function
+	/*
+		totalTrackGates := len(pilot.lap1Gates)
+		var lastUserGate = 0
+		for _, i := range split {
+			if i > lastUserGate {
+				lastUserGate = i
+			}
+		}
+		if lastUserGate > totalTrackGates {
+			split = []int{}
+			for i := 1; i < totalTrackGates; i++ {
+				split = append(split, i)
+			}
+		}*/
+
 	//////////// Holeshot is gate 1!!!!!///////////
 	lap1Gates = append(lap1Gates, pilot.lap1Gates[0])
 	for _, i := range split {
@@ -187,6 +203,22 @@ func (r race) leadSplits(split ...int) []float64 { // 2,6,16,18,22,24,26
 			hotLap = 3
 		}
 	}
+	/*
+		totalTrackGates := len(topPilot.lap1Gates)
+		var lastUserGate = 0
+		for _, i := range split {
+			if i > lastUserGate {
+				lastUserGate = i
+			}
+		}
+		if lastUserGate > totalTrackGates {
+			fmt.Println("Alert: Specified Track Splits exceed track gate range")
+			split = []int{}
+			for i := 1; i < totalTrackGates; i++ {
+				split = append(split, i)
+			}
+		}
+	*/
 	switch hotLap {
 	case 1:
 		pilotGateList = append(pilotGateList, topPilot.lap1Gates[0])
