@@ -15,6 +15,8 @@ var docStyle = lipgloss.NewStyle().Margin(1, 2)
 type model struct {
 	gateOptions list.Model
 	keys        *listKeyMap
+	results     bool
+	track       track
 }
 
 func (m model) Init() tea.Cmd {
@@ -35,8 +37,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.selectTrack):
 			x := m.gateOptions.Index()
-
-			fmt.Print(tracks[x])
+			m.track = tracks[x]
+			m.results = true
 			return m, nil
 		case msg.String() == "ctrl+c":
 			return m, tea.Quit
@@ -49,7 +51,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	return docStyle.Render(m.gateOptions.View())
+
+	switch {
+
+	case m.results:
+		results := fmt.Sprintf("Track:%s\nBy:%s,Gates: %v", m.track.name, m.track.author, m.track.gates)
+		return docStyle.Render(results)
+
+	default:
+		return docStyle.Render(m.gateOptions.View())
+	}
+
 }
 
 func main() {
